@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Sistema de Reservas de Aulas</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+
+<!-- Pantalla de Login -->
+<div id="loginScreen" class="min-h-screen flex items-center justify-center px-4">
+    <div class="bg-white rounded-lg shadow-xl p-8 max-w-md w-full">
+        <h1 class="text-3xl font-bold text-gray-800 mb-6 text-center">Sistema de Reservas de Aulas</h1>
+
+        <div id="loginForm">
+            <h2 class="text-xl font-semibold mb-4">Iniciar Sesión</h2>
+            <form onsubmit="handleLogin(event)">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                    <input type="email" id="loginEmail" required
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Contraseña</label>
+                    <input type="password" id="loginPassword" required
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                </div>
+                <button type="submit" class="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium">
+                    Iniciar Sesión
+                </button>
+            </form>
+            <p class="mt-4 text-center text-sm text-gray-600">
+                ¿No tienes cuenta?
+                <button onclick="showRegisterForm()" class="text-blue-600 hover:underline">Regístrate</button>
+            </p>
+        </div>
+
+        <div id="registerForm" class="hidden">
+            <h2 class="text-xl font-semibold mb-4">Registrarse</h2>
+            <form onsubmit="handleRegister(event)">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                    <input type="email" id="registerEmail" required
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Contraseña (mín. 6 caracteres)</label>
+                    <input type="password" id="registerPassword" required minlength="6"
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                </div>
+                <button type="submit" class="w-full px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-medium">
+                    Registrarse
+                </button>
+            </form>
+            <p class="mt-4 text-center text-sm text-gray-600">
+                ¿Ya tienes cuenta?
+                <button onclick="showLoginForm()" class="text-blue-600 hover:underline">Inicia sesión</button>
+            </p>
+        </div>
+
+        <div class="mt-6">
+            <label class="block text-sm font-medium text-gray-700 mb-2">URL del Servidor</label>
+            <input type="text" id="serverUrl" value="http://localhost:8080"
+                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+        </div>
+    </div>
+</div>
+
+<!-- Aplicación Principal -->
+<div id="mainApp" class="hidden">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header con info de usuario -->
+        <div class="bg-white rounded-lg shadow-md p-4 mb-8 flex justify-between items-center">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-800">Sistema de Reservas de Aulas</h1>
+                <p class="text-sm text-gray-600 mt-1">
+                    <span id="userEmail" class="font-medium"></span>
+                    (<span id="userRole" class="font-medium"></span>)
+                </p>
+            </div>
+            <button onclick="handleLogout()" class="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">
+                Cerrar Sesión
+            </button>
+        </div>
+
+        <!-- Pestañas -->
+        <div class="bg-white rounded-lg shadow-md mb-8">
+            <div class="flex border-b">
+                <button onclick="showTab('aulas')" id="tab-aulas" class="flex-1 px-6 py-4 text-center font-medium border-b-2 border-blue-600 text-blue-600">
+                    Aulas
+                </button>
+                <button onclick="showTab('horarios')" id="tab-horarios" class="flex-1 px-6 py-4 text-center font-medium text-gray-600 hover:text-blue-600">
+                    Horarios
+                </button>
+                <button onclick="showTab('reservas')" id="tab-reservas" class="flex-1 px-6 py-4 text-center font-medium text-gray-600 hover:text-blue-600">
+                    Reservas
+                </button>
+            </div>
+        </div>
+
+        <!-- Sección de Aulas -->
+        <div id="section-aulas" class="space-y-6">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-2xl font-semibold mb-4">Gestión de Aulas</h2>
+                <div id="aulaFormContainer"></div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h3 class="text-xl font-semibold mb-4">Filtros</h3>
+                <div class="flex gap-4">
+                    <div class="flex-1">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Capacidad mínima</label>
+                        <input type="number" id="filtroCapacidad" class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                    </div>
+                    <div class="flex-1">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Con ordenadores</label>
+                        <select id="filtroOrdenadores" class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                            <option value="">Todos</option>
+                            <option value="true">Sí</option>
+                            <option value="false">No</option>
+                        </select>
+                    </div>
+                    <div class="flex items-end gap-2">
+                        <button onclick="loadAulas()" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                            Aplicar
+                        </button>
+                        <button onclick="clearFilters()" class="px-6 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition">
+                            Limpiar
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h3 class="text-xl font-semibold mb-4">Lista de Aulas</h3>
+                <div id="aulasList"></div>
+            </div>
+        </div>
+
+        <!-- Sección de Horarios -->
+        <div id="section-horarios" class="space-y-6 hidden">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-2xl font-semibold mb-4">Gestión de Horarios</h2>
+                <div id="horarioFormContainer"></div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h3 class="text-xl font-semibold mb-4">Lista de Horarios</h3>
+                <div id="horariosList"></div>
+            </div>
+        </div>
+
+        <!-- Sección de Reservas -->
+        <div id="section-reservas" class="space-y-6 hidden">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-2xl font-semibold mb-4">Crear Reserva</h2>
+                <form id="reservaForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Aula</label>
+                        <select id="reservaAulaId" required class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                            <option value="">Seleccione un aula</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Horario</label>
+                        <select id="reservaHorarioId" required class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                            <option value="">Seleccione un horario</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Fecha</label>
+                        <input type="date" id="reservaFecha" required class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Asistentes</label>
+                        <input type="number" id="reservaAsistentes" required min="1" class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Motivo</label>
+                        <input type="text" id="reservaMotivo" required class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                    </div>
+                    <div class="md:col-span-2">
+                        <button type="submit" class="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium">
+                            Crear Reserva
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h3 class="text-xl font-semibold mb-4">Mis Reservas</h3>
+                <div id="reservasList"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Confirmación -->
+<div id="confirmModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+        <h3 class="text-xl font-semibold mb-4">Confirmar Eliminación</h3>
+        <p class="text-gray-600 mb-6">¿Está seguro de que desea eliminar este elemento?</p>
+        <div class="flex gap-4">
+            <button onclick="closeModal()" class="flex-1 px-6 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition">
+                Cancelar
+            </button>
+            <button id="confirmDelete" class="flex-1 px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">
+                Eliminar
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- Estado Global ---
+    let token = localStorage.getItem('token') || null;
+    let userInfo = JSON.parse(localStorage.getItem('userInfo') || 'null');
+    const API_URL = () => document.getElementById('serverUrl').value;
+
+    // --- Inicialización ---
+    document.addEventListener('DOMContentLoaded', () => {
+        if (token && userInfo) {
+            showMainApp();
+        } else {
+            showLoginScreen();
+        }
+    });
+
+    // --- Utilidades ---
+    function showNotification(message, type = 'success') {
+        const colors = { success: 'bg-green-500', error: 'bg-red-500', info: 'bg-blue-500' };
+        const notification = document.createElement('div');
+        notification.className = `fixed top-4 right-4 ${colors[type]} text-white px-6 py-3 rounded-lg shadow-lg z-50`;
+        notification.textContent = message;
+        document.body.appendChild(notification);
+        setTimeout(() => notification.remove(), 3000);
+    }
+
+    async function fetchWithAuth(url, options = {}) {
+        const headers = {
+            'Content-Type': 'application/json',
+            ...options.headers
+        };
+
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+
+        const response = await fetch(url, { ...options, headers });
+
+        if (response.status === 401) {
+            showNotification('Sesión expirada. Por favor, inicia sesión nuevamente.', 'error');
+            handleLogout();
+            return null;
+        }
+
+        return response;
+    }
+
+    // --- Autenticación ---
+    function showLoginScreen() {
+        document.getElementById('loginScreen').classList.remove('hidden');
+        document.getElementById('mainApp').classList.add('hidden');
+    }
+
+    function showMainApp() {
+        document.getElementById('loginScreen').classList.add('hidden');
+        document.getElementById('mainApp').classList.remove('hidden');
+        document.getElementById('userEmail').textContent = userInfo.email;
+        document.getElementById('userRole').textContent = userInfo.roles.includes('ADMIN') ? 'Administrador' : 'Profesor';
+        renderFormsByRole();
+        showTab('aulas');
+    }
+
+    function showRegisterForm() {
+        document.getElementById('loginForm').classList.add('hidden');
+        document.getElementById('registerForm').classList.remove('hidden');
+    }
+
+    function showLoginForm() {
+        document.getElementById('registerForm').classList.add('hidden');
+        document.getElementById('loginForm').classList.remove('hidden');
+    }
+
+    async function handleLogin(event) {
+        event.preventDefault();
+        const email = document.getElementById('loginEmail').value;
+        const password = document.getElementById('loginPassword').value;
+
+        try {
+            const response = await fetch(`${API_URL()}/auth/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                token = data.token;
+                localStorage.setItem('token', token);
+
+                // Obtener info del usuario
+                const profileResponse = await fetchWithAuth(`${API_URL()}/auth/perfil`);
+                userInfo = await profileResponse.json();
+                localStorage.setItem('userInfo', JSON.stringify(userInfo));
+
+                showNotification('¡Bienvenido!', 'success');
+                showMainApp();
+            } else {
+                showNotification(data.error || 'Error al iniciar sesión', 'error');
+            }
+        } catch (error) {
+            showNotification('Error de conexión', 'error');
+        }
+    }
+
+    async function handleRegister(event) {
+        event.preventDefault();
+        const email = document.getElementById('registerEmail').value;
+        const password = document.getElementById('registerPassword').value;
+
+        try {
+            const response = await fetch(`${API_URL()}/auth/register`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                showNotification('Registro exitoso. Ahora puedes iniciar sesión.', 'success');
+                showLoginForm();
+                document.getElementById('loginEmail').value = email;
+            } else {
+                showNotification(data.error || 'Error al registrarse', 'error');
+            }
+        } catch (error) {
+            showNotification('Error de conexión', 'error');
+        }
+    }
+
+    function handleLogout() {
+        token = null;
+        userInfo = null;
+        localStorage.removeItem('token');
+        localStorage.removeItem('userInfo');
+        showLoginScreen();
+        showNotification('Sesión cerrada', 'info');
+    }
+
+    // --- Renderizado según rol ---
+    function renderFormsByRole() {
+        const isAdmin = userInfo.roles.includes('ADMIN');
+
+        // Formulario de Aulas
+        document.getElementById('aulaFormContainer').innerHTML = isAdmin ? `
+            <form id="aulaForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Nombre</label>
+                    <input type="text" id="aulaNombre" required class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Capacidad</label>
+                    <input type="number" id="aulaCapacidad" required class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                </div>
+                <div class="flex items-center">
+                    <input type="checkbox" id="aulaEsOrdenadores" class="w-5 h-5">
+                    <label class="ml-2 text-sm font-medium text-gray-700">¿Tiene ordenadores?</label>
+                </div>
+                <div>
+                    <button type="submit" class="w-full px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                        Crear Aula
+                    </button>
+                </div>
+            </form>
+        ` : '<p class="text-gray-500 italic">Solo los administradores pueden crear aulas.</p>';
+
+        // Formulario de Horarios
+        document.getElementById('horarioFormContainer').innerHTML = isAdmin ? `
+            <form id="horarioForm" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Día</label>
+                    <select id="horarioDiaSemana" required class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                        <option value="LUNES">Lunes</option>
+                        <option value="MARTES">Martes</option>
+                        <option value="MIERCOLES">Miércoles</option>
+                        <option value="JUEVES">Jueves</option>
+                        <option value="VIERNES">Viernes</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Hora Inicio</label>
+                    <input type="time" id="horarioHoraInicio" required class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Hora Fin</label>
+                    <input type="time" id="horarioHoraFin" required class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                </div>
+                <div class="md:col-span-3">
+                    <button type="submit" class="w-full px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                        Crear Horario
+                    </button>
+                </div>
+            </form>
+        ` : '<p class="text-gray-500 italic">Solo los administradores pueden crear horarios.</p>';
+
+        // Añadir event listeners
+        if (isAdmin) {
+            document.getElementById('aulaForm')?.addEventListener('submit', handleCreateAula);
+            document.getElementById('horarioForm')?.addEventListener('submit', handleCreateHorario);
+        }
+    }
+
+    // --- Pestañas ---
+    function showTab(tab) {
+        document.querySelectorAll('[id^="section-"]').forEach(el => el.classList.add('hidden'));
+        document.querySelectorAll('[id^="tab-"]').forEach(el => {
+            el.classList.remove('border-blue-600', 'text-blue-600');
+            el.classList.add('text-gray-600');
+        });
+
+        document.getElementById(`section-${tab}`).classList.remove('hidden');
+        const tabButton = document.getElementById(`tab-${tab}`);
+        tabButton.classList.add('border-blue-600', 'text-blue-600');
+        tabButton.classList.remove('text-gray-600');
+
+        if (tab === 'aulas') loadAulas();
+        if (tab === 'horarios') loadHorarios();
+        if (tab === 'reservas') {
+            loadReservas();
+            loadAulasForSelect();
+            loadHorariosForSelect();
+        }
+    }
+
+    // --- CRUD Aulas ---
+    async function loadAulas() {
+        const capacidad = document.getElementById('filtroCapacidad').value;
+        const esOrdenadores = document.getElementById('filtroOrdenadores').value;
+        let url = `${API_URL()}/aulas`;
+        const params = new URLSearchParams();
+        if (capacidad) params.append('capacidad', capacidad);
+        if (esOrdenadores) params.append('esOrdenadores', esOrdenadores);
+        if (params.toString()) url += `?${params.toString()}`;
+
+        const response = await fetchWithAuth(url);
+        if (!response) return;
+
+        const aulas = await response.json();
+        displayAulas(aulas);
+    }
+
+    function displayAulas(aulas) {
+        const isAdmin = userInfo.roles.includes('ADMIN');
+        const container = document.getElementById('aulasList');
+
+        if (!aulas || aulas.length === 0) {
+            container.innerHTML = '<p class="text-gray-500 text-center py-4">No hay aulas disponibles</p>';
+            return;
+        }
+
+        container.innerHTML = `
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nombre</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Capacidad</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ordenadores</th>
+                        ${isAdmin ? '<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Acciones</th>' : ''}
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    ${aulas.map(aula => `
+                        <tr>
+                            <td class="px-6 py-4 text-sm text-gray-900">${aula.nombre}</td>
+                            <td class="px-6 py-4 text-sm text-gray-900">${aula.capacidad}</td>
+                            <td class="px-6 py-4 text-sm text-gray-900">${aula.esOrdenadores ? 'Sí' : 'No'}</td>
+                            ${isAdmin ? `<td class="px-6 py-4 text-sm">
+                                <button onclick="deleteAula(${aula.id})" class="text-red-600 hover:text-red-800">Eliminar</button>
+                            </td>` : ''}
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        `;
+    }
+
+    async function handleCreateAula(event) {
+        event.preventDefault();
+        const aula = {
+            nombre: document.getElementById('aulaNombre').value,
+            capacidad: parseInt(document.getElementById('aulaCapacidad').value),
+            esOrdenadores: document.getElementById('aulaEsOrdenadores').checked
+        };
+
+        const response = await fetchWithAuth(`${API_URL()}/aulas`, {
+            method: 'POST',
+            body: JSON.stringify(aula)
+        });
+
+        if (response && response.ok) {
+            showNotification('Aula creada correctamente', 'success');
+            document.getElementById('aulaForm').reset();
+            loadAulas();
+        } else {
+            showNotification('Error al crear el aula', 'error');
+        }
+    }
+
+    async function deleteAula(id) {
+        if (!confirm('¿Eliminar esta aula?')) return;
+
+        const response = await fetchWithAuth(`${API_URL()}/aulas/${id}`, { method: 'DELETE' });
+
+        if (response && response.ok) {
+            showNotification('Aula eliminada', 'success');
+            loadAulas();
+        } else {
+            showNotification('Error al eliminar', 'error');
+        }
+    }
+
+    function clearFilters() {
+        document.getElementById('filtroCapacidad').value = '';
+        document.getElementById('filtroOrdenadores').value = '';
+        loadAulas();
+    }
+
+    // --- CRUD Horarios ---
+    async function loadHorarios() {
+        const response = await fetchWithAuth(`${API_URL()}/horarios`);
+        if (!response) return;
+
+        const horarios = await response.json();
+        displayHorarios(horarios);
+    }
+
+    function displayHorarios(horarios) {
+        const isAdmin = userInfo.roles.includes('ADMIN');
+        const container = document.getElementById('horariosList');
+
+        if (!horarios || horarios.length === 0) {
+            container.innerHTML = '<p class="text-gray-500 text-center py-4">No hay horarios disponibles</p>';
+            return;
+        }
+
+        container.innerHTML = `
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Día</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Inicio</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fin</th>
+                        ${isAdmin ? '<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Acciones</th>' : ''}
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    ${horarios.map(h => `
+                        <tr>
+                            <td class="px-6 py-4 text-sm text-gray-900">${h.diaSemana}</td>
+                            <td class="px-6 py-4 text-sm text-gray-900">${h.horaInicio}</td>
+                            <td class="px-6 py-4 text-sm text-gray-900">${h.horaFin}</td>
+                            ${isAdmin ? `<td class="px-6 py-4 text-sm">
+                                <button onclick="deleteHorario(${h.id})" class="text-red-600 hover:text-red-800">Eliminar</button>
+                            </td>` : ''}
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        `;
+    }
+
+    async function handleCreateHorario(event) {
+        event.preventDefault();
+        const horario = {
+            diaSemana: document.getElementById('horarioDiaSemana').value,
+            horaInicio: document.getElementById('horarioHoraInicio').value,
+            horaFin: document.getElementById('horarioHoraFin').value
+        };
+
+        const response = await fetchWithAuth(`${API_URL()}/horarios`, {
+            method: 'POST',
+            body: JSON.stringify(horario)
+        });
+
+        if (response && response.ok) {
+            showNotification('Horario creado correctamente', 'success');
+            document.getElementById('horarioForm').reset();
+            loadHorarios();
+        } else {
+            showNotification('Error al crear el horario', 'error');
+        }
+    }
+
+    async function deleteHorario(id) {
+        if (!confirm('¿Eliminar este horario?')) return;
+
+        const response = await fetchWithAuth(`${API_URL()}/horarios/${id}`, { method: 'DELETE' });
+
+        if (response && response.ok) {
+            showNotification('Horario eliminado', 'success');
+            loadHorarios();
+        } else {
+            showNotification('Error al eliminar', 'error');
+        }
+    }
+
+    // --- CRUD Reservas ---
+    async function loadAulasForSelect() {
+        const response = await fetchWithAuth(`${API_URL()}/aulas`);
+        if (!response) return;
+
+        const aulas = await response.json();
+        const select = document.getElementById('reservaAulaId');
+        select.innerHTML = '<option value="">Seleccione un aula</option>' +
+            aulas.map(a => `<option value="${a.id}">${a.nombre} (Cap: ${a.capacidad})</option>`).join('');
+    }
+
+    async function loadHorariosForSelect() {
+        const response = await fetchWithAuth(`${API_URL()}/horarios`);
+        if (!response) return;
+
+        const horarios = await response.json();
+        const select = document.getElementById('reservaHorarioId');
+        select.innerHTML = '<option value="">Seleccione un horario</option>' +
+            horarios.map(h => `<option value="${h.id}">${h.diaSemana} ${h.horaInicio}-${h.horaFin}</option>`).join('');
+    }
+
+    async function loadReservas() {
+        const response = await fetchWithAuth(`${API_URL()}/reservas`);
+        if (!response) return;
+
+        const reservas = await response.json();
+        displayReservas(reservas);
+    }
+
+    function displayReservas(reservas) {
+        const isAdmin = userInfo.roles.includes('ADMIN');
+        const container = document.getElementById('reservasList');
+
+        if (!reservas || reservas.length === 0) {
+            container.innerHTML = '<p class="text-gray-500 text-center py-4">No hay reservas</p>';
+            return;
+        }
+
+        // Filtrar reservas del usuario si es profesor
+        const reservasFiltradas = isAdmin ? reservas : reservas.filter(r => r.usuarioEmail === userInfo.email);
+
+        container.innerHTML = `
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aula</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Horario</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fecha</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Motivo</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Asistentes</th>
+                        ${isAdmin ? '<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Profesor</th>' : ''}
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    ${reservasFiltradas.map(r => `
+                        <tr>
+                            <td class="px-6 py-4 text-sm text-gray-900">${r.aulaNombre || 'N/A'}</td>
+                            <td class="px-6 py-4 text-sm text-gray-900">${r.horarioDiaSemana || 'N/A'} ${r.horarioHoraInicio || ''}</td>
+                            <td class="px-6 py-4 text-sm text-gray-900">${r.fecha}</td>
+                            <td class="px-6 py-4 text-sm text-gray-900">${r.motivo}</td>
+                            <td class="px-6 py-4 text-sm text-gray-900">${r.asistentes}</td>
+                            ${isAdmin ? `<td class="px-6 py-4 text-sm text-gray-900">${r.usuarioEmail || 'N/A'}</td>` : ''}
+                            <td class="px-6 py-4 text-sm">
+                                <button onclick="deleteReserva(${r.id})" class="text-red-600 hover:text-red-800">Eliminar</button>
+                            </td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        `;
+    }
+
+    document.getElementById('reservaForm').addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        // Convertir fecha de YYYY-MM-DD a DD/MM/YYYY
+        const fechaInput = document.getElementById('reservaFecha').value;
+        const [year, month, day] = fechaInput.split('-');
+        const fechaFormateada = `${day}/${month}/${year}`;
+
+        const reserva = {
+            aulaId: parseInt(document.getElementById('reservaAulaId').value),
+            horarioId: parseInt(document.getElementById('reservaHorarioId').value),
+            fecha: fechaFormateada,
+            motivo: document.getElementById('reservaMotivo').value,
+            asistentes: parseInt(document.getElementById('reservaAsistentes').value)
+        };
+
+        const response = await fetchWithAuth(`${API_URL()}/reservas`, {
+            method: 'POST',
+            body: JSON.stringify(reserva)
+        });
+
+        if (response && response.ok) {
+            showNotification('Reserva creada correctamente', 'success');
+            document.getElementById('reservaForm').reset();
+            loadReservas();
+        } else {
+            const error = await response.text();
+            showNotification('Error: ' + error, 'error');
+        }
+    });
+
+    async function deleteReserva(id) {
+        if (!confirm('¿Eliminar esta reserva?')) return;
+
+        const response = await fetchWithAuth(`${API_URL()}/reservas/${id}`, { method: 'DELETE' });
+
+        if (response && response.ok) {
+            showNotification('Reserva eliminada', 'success');
+            loadReservas();
+        } else {
+            const error = await response.text();
+            showNotification('Error: ' + error, 'error');
+        }
+    }
+
+    // Modal helpers
+    function closeModal() {
+        document.getElementById('confirmModal').classList.add('hidden');
+    }
+</script>
+</body>
+</html>

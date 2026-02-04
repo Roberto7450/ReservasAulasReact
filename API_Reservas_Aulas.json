@@ -1,0 +1,581 @@
+{
+  "info": {
+    "name": "API Reservas Aulas",
+    "description": "Colección completa de endpoints para el sistema de reservas de aulas",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. AUTENTICACIÓN",
+      "item": [
+        {
+          "name": "Register - Nuevo Usuario",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"profesor3@iesjuanbosco.es\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "register"]
+            }
+          }
+        },
+        {
+          "name": "Login - ADMIN",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "pm.collectionVariables.set(\"token\", jsonData.token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@iesjuanbosco.es\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Login - PROFESOR",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "pm.collectionVariables.set(\"token\", jsonData.token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"profesor1@iesjuanbosco.es\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Obtener Perfil",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/perfil",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "perfil"]
+            }
+          }
+        },
+        {
+          "name": "Cambiar Contraseña",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"passwordActual\": \"password123\",\n  \"nuevaPassword\": \"nuevaPassword456\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/cambiar-pass",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "cambiar-pass"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. AULAS",
+      "item": [
+        {
+          "name": "Listar Todas las Aulas",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/aulas",
+              "host": ["{{baseUrl}}"],
+              "path": ["aulas"]
+            }
+          }
+        },
+        {
+          "name": "Obtener Aula por ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/aulas/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["aulas", "1"]
+            }
+          }
+        },
+        {
+          "name": "Filtrar por Capacidad",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/aulas?capacidad=25",
+              "host": ["{{baseUrl}}"],
+              "path": ["aulas"],
+              "query": [
+                {
+                  "key": "capacidad",
+                  "value": "25"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Filtrar con Ordenadores",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/aulas?esOrdenadores=true",
+              "host": ["{{baseUrl}}"],
+              "path": ["aulas"],
+              "query": [
+                {
+                  "key": "esOrdenadores",
+                  "value": "true"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Crear Aula (ADMIN)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Aula 202\",\n  \"capacidad\": 35,\n  \"esOrdenadores\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/aulas",
+              "host": ["{{baseUrl}}"],
+              "path": ["aulas"]
+            }
+          }
+        },
+        {
+          "name": "Actualizar Aula (ADMIN)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Aula 202 Actualizada\",\n  \"capacidad\": 40,\n  \"esOrdenadores\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/aulas/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["aulas", "1"]
+            }
+          }
+        },
+        {
+          "name": "Eliminar Aula (ADMIN)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/aulas/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["aulas", "1"]
+            }
+          }
+        },
+        {
+          "name": "Ver Reservas de un Aula",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/aulas/1/reservas",
+              "host": ["{{baseUrl}}"],
+              "path": ["aulas", "1", "reservas"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. HORARIOS",
+      "item": [
+        {
+          "name": "Listar Todos los Horarios",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/horarios",
+              "host": ["{{baseUrl}}"],
+              "path": ["horarios"]
+            }
+          }
+        },
+        {
+          "name": "Obtener Horario por ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/horarios/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["horarios", "1"]
+            }
+          }
+        },
+        {
+          "name": "Crear Horario (ADMIN)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"diaSemana\": \"LUNES\",\n  \"horaInicio\": \"11:00:00\",\n  \"horaFin\": \"12:00:00\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/horarios",
+              "host": ["{{baseUrl}}"],
+              "path": ["horarios"]
+            }
+          }
+        },
+        {
+          "name": "Actualizar Horario (ADMIN)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"diaSemana\": \"MARTES\",\n  \"horaInicio\": \"12:00:00\",\n  \"horaFin\": \"13:00:00\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/horarios/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["horarios", "1"]
+            }
+          }
+        },
+        {
+          "name": "Eliminar Horario (ADMIN)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/horarios/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["horarios", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. RESERVAS",
+      "item": [
+        {
+          "name": "Listar Todas las Reservas",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/reservas",
+              "host": ["{{baseUrl}}"],
+              "path": ["reservas"]
+            }
+          }
+        },
+        {
+          "name": "Obtener Reserva por ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/reservas/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["reservas", "1"]
+            }
+          }
+        },
+        {
+          "name": "Crear Reserva",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"aulaId\": 1,\n  \"horarioId\": 1,\n  \"fecha\": \"15/01/2025\",\n  \"motivo\": \"Clase de Matemáticas\",\n  \"asistentes\": 25\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/reservas",
+              "host": ["{{baseUrl}}"],
+              "path": ["reservas"]
+            }
+          }
+        },
+        {
+          "name": "Actualizar Reserva Propia",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"aulaId\": 1,\n  \"horarioId\": 2,\n  \"fecha\": \"16/01/2025\",\n  \"motivo\": \"Clase de Física\",\n  \"asistentes\": 20\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/reservas/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["reservas", "1"]
+            }
+          }
+        },
+        {
+          "name": "Eliminar Reserva Propia",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/reservas/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["reservas", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. USUARIOS (Solo ADMIN)",
+      "item": [
+        {
+          "name": "Actualizar Usuario",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"nuevoEmail@iesjuanbosco.es\",\n  \"roles\": \"ROLE_ADMIN\",\n  \"enabled\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/usuario/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["usuario", "1"]
+            }
+          }
+        },
+        {
+          "name": "Eliminar Usuario",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/usuario/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["usuario", "1"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
