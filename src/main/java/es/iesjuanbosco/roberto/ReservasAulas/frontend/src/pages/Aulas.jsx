@@ -13,6 +13,7 @@ export default function Aulas() {
   });
   const [submitLoading, setSubmitLoading] = useState(false);
   const [submitError, setSubmitError] = useState('');
+  const [submitErrorDetails, setSubmitErrorDetails] = useState('');
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -26,6 +27,7 @@ export default function Aulas() {
     e.preventDefault();
     setSubmitLoading(true);
     setSubmitError('');
+    setSubmitErrorDetails('');
 
     try {
       if (editingId) {
@@ -38,7 +40,29 @@ export default function Aulas() {
       setShowForm(false);
       setEditingId(null);
     } catch (err) {
-      setSubmitError(err.response?.data?.message || 'Error al guardar el aula');
+      let errorMessage = 'Error al guardar el aula';
+      let errorDetails = '';
+
+      if (err.response?.data) {
+        if (typeof err.response.data === 'string') {
+          errorMessage = err.response.data;
+        } else if (err.response.data.message) {
+          errorMessage = err.response.data.message;
+        } else if (err.response.data.error) {
+          errorMessage = err.response.data.error;
+        }
+      }
+
+      if (errorMessage.includes('Error de validación:')) {
+        const parts = errorMessage.split('Error de validación: ');
+        if (parts.length > 1) {
+          errorDetails = parts[1];
+          errorMessage = 'Error de validación:';
+        }
+      }
+
+      setSubmitError(errorMessage);
+      setSubmitErrorDetails(errorDetails);
     } finally {
       setSubmitLoading(false);
     }
@@ -52,6 +76,8 @@ export default function Aulas() {
     });
     setEditingId(aula.id);
     setShowForm(true);
+    setSubmitError('');
+    setSubmitErrorDetails('');
   };
 
   const handleDelete = async (id) => {
@@ -61,7 +87,18 @@ export default function Aulas() {
       await aulaService.eliminar(id);
       mutate();
     } catch (err) {
-      setSubmitError('Error al eliminar el aula');
+      let errorMessage = 'Error al eliminar el aula';
+      
+      if (err.response?.data) {
+        if (typeof err.response.data === 'string') {
+          errorMessage = err.response.data;
+        } else if (err.response.data.message) {
+          errorMessage = err.response.data.message;
+        }
+      }
+      
+      setSubmitError(errorMessage);
+      setSubmitErrorDetails('');
     }
   };
 
@@ -69,6 +106,8 @@ export default function Aulas() {
     setFormData({ nombre: '', capacidad: '', esOrdenadores: false });
     setShowForm(false);
     setEditingId(null);
+    setSubmitError('');
+    setSubmitErrorDetails('');
   };
 
   if (isLoading) {
@@ -84,7 +123,16 @@ export default function Aulas() {
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold text-gray-900">Aulas</h1>
         <button
-          onClick={() => setShowForm(!showForm)}
+          onClick={() => {
+            if (!showForm) {
+              // Limpiar formulario y errores cuando se abre
+              setFormData({ nombre: '', capacidad: '', esOrdenadores: false });
+              setEditingId(null);
+              setSubmitError('');
+              setSubmitErrorDetails('');
+            }
+            setShowForm(!showForm);
+          }}
           className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
         >
           {showForm ? 'Cancelar' : 'Nueva Aula'}
@@ -98,8 +146,11 @@ export default function Aulas() {
           </h2>
 
           {submitError && (
-            <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
-              {submitError}
+            <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+              <p className="font-semibold">{submitError}</p>
+              {submitErrorDetails && (
+                <p className="mt-2 text-sm">{submitErrorDetails}</p>
+              )}
             </div>
           )}
 

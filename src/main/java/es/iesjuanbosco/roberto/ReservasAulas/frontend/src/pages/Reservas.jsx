@@ -1,9 +1,27 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useFetch } from '../hooks/useFetch';
 import { reservaService } from '../services/reservaService';
 import { aulaService } from '../services/aulaService';
 import { horarioService } from '../services/horarioService';
 import { formatDateToISO } from '../utils/api';
+
+// Obtener el nombre del día de la semana en español
+const getDayName = (dateStr) => {
+  const date = new Date(dateStr);
+  const days = [
+    'domingo',
+    'lunes',
+    'martes',
+    'miércoles',
+    'jueves',
+    'viernes',
+    'sábado',
+  ];
+  return days[date.getDay()];
+};
+
+// Convertir nombre del día a capitalizado
+const capitalize = (str) => str.charAt(0).toUpperCase() + str.slice(1);
 
 export default function Reservas() {
   const { data: reservas, error, isLoading, mutate } = useFetch('/reservas');
@@ -21,19 +39,44 @@ export default function Reservas() {
   });
   const [submitLoading, setSubmitLoading] = useState(false);
   const [submitError, setSubmitError] = useState('');
+  const [submitErrorDetails, setSubmitErrorDetails] = useState('');
+
+  // Filtrar horarios según el día de la semana de la fecha seleccionada
+  const filteredHorarios = useMemo(() => {
+    if (!formData.fecha || !horarios) return horarios || [];
+    
+    const selectedDay = getDayName(formData.fecha);
+    return horarios.filter(
+      (horario) =>
+        horario.diaSemana.toLowerCase() === selectedDay.toLowerCase()
+    );
+  }, [formData.fecha, horarios]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
+    
+    // Si se cambia la fecha, resetear el horarioId para forzar selección correcta
+    if (name === 'fecha') {
+      setFormData({
+        ...formData,
+        [name]: value,
+        horarioId: '', // Reset horario cuando cambia la fecha
+      });
+      setSubmitError('');
+      setSubmitErrorDetails('');
+    } else {
+      setFormData({
+        ...formData,
+        [name]: value,
+      });
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitLoading(true);
     setSubmitError('');
+    setSubmitErrorDetails('');
 
     try {
       const payload = {
@@ -61,9 +104,32 @@ export default function Reservas() {
       setShowForm(false);
       setEditingId(null);
     } catch (err) {
-      setSubmitError(
-        err.response?.data?.message || 'Error al guardar la reserva'
-      );
+      // Capturar el mensaje de error del servidor
+      let errorMessage = 'Error al guardar la reserva';
+      let errorDetails = '';
+
+      if (err.response?.data) {
+        // Servidor envió un mensaje específico
+        if (typeof err.response.data === 'string') {
+          errorMessage = err.response.data;
+        } else if (err.response.data.message) {
+          errorMessage = err.response.data.message;
+        } else if (err.response.data.error) {
+          errorMessage = err.response.data.error;
+        }
+      }
+
+      // Extraer detalles si es un error de validación
+      if (errorMessage.includes('Error de validación:')) {
+        const parts = errorMessage.split('Error de validación: ');
+        if (parts.length > 1) {
+          errorDetails = parts[1];
+          errorMessage = 'Error de validación:';
+        }
+      }
+
+      setSubmitError(errorMessage);
+      setSubmitErrorDetails(errorDetails);
     } finally {
       setSubmitLoading(false);
     }
@@ -79,6 +145,8 @@ export default function Reservas() {
     });
     setEditingId(reserva.id);
     setShowForm(true);
+    setSubmitError('');
+    setSubmitErrorDetails('');
   };
 
   const handleDelete = async (id) => {
@@ -89,7 +157,18 @@ export default function Reservas() {
       await reservaService.eliminar(id);
       mutate();
     } catch (err) {
-      setSubmitError('Error al eliminar la reserva');
+      let errorMessage = 'Error al eliminar la reserva';
+      
+      if (err.response?.data) {
+        if (typeof err.response.data === 'string') {
+          errorMessage = err.response.data;
+        } else if (err.response.data.message) {
+          errorMessage = err.response.data.message;
+        }
+      }
+      
+      setSubmitError(errorMessage);
+      setSubmitErrorDetails('');
     }
   };
 
@@ -103,6 +182,8 @@ export default function Reservas() {
     });
     setShowForm(false);
     setEditingId(null);
+    setSubmitError('');
+    setSubmitErrorDetails('');
   };
 
   if (isLoading) {
@@ -118,7 +199,22 @@ export default function Reservas() {
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold text-gray-900">Reservas</h1>
         <button
-          onClick={() => setShowForm(!showForm)}
+          onClick={() => {
+            if (!showForm) {
+              // Limpiar formulario y errores cuando se abre
+              setFormData({
+                aulaId: '',
+                horarioId: '',
+                fecha: '',
+                motivo: '',
+                asistentes: '',
+              });
+              setEditingId(null);
+              setSubmitError('');
+              setSubmitErrorDetails('');
+            }
+            setShowForm(!showForm);
+          }}
           className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
         >
           {showForm ? 'Cancelar' : 'Nueva Reserva'}
@@ -132,8 +228,11 @@ export default function Reservas() {
           </h2>
 
           {submitError && (
-            <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
-              {submitError}
+            <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+              <p className="font-semibold">{submitError}</p>
+              {submitErrorDetails && (
+                <p className="mt-2 text-sm">{submitErrorDetails}</p>
+              )}
             </div>
           )}
 
@@ -163,20 +262,30 @@ export default function Reservas() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Horario
                 </label>
-                <select
-                  name="horarioId"
-                  value={formData.horarioId}
-                  onChange={handleInputChange}
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-blue-500"
-                >
-                  <option value="">Seleccionar horario</option>
-                  {horarios?.map((horario) => (
-                    <option key={horario.id} value={horario.id}>
-                      {horario.diaSemana} ({horario.horaInicio} - {horario.horaFin})
+                {formData.fecha && filteredHorarios.length === 0 ? (
+                  <div className="w-full px-3 py-2 border border-red-300 rounded-lg bg-red-50 text-red-600 text-sm">
+                    No hay horarios disponibles para {capitalize(getDayName(formData.fecha))}
+                  </div>
+                ) : (
+                  <select
+                    name="horarioId"
+                    value={formData.horarioId}
+                    onChange={handleInputChange}
+                    required
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-blue-500"
+                  >
+                    <option value="">
+                      {formData.fecha
+                        ? `Seleccionar horario para ${capitalize(getDayName(formData.fecha))}`
+                        : 'Seleccionar horario'}
                     </option>
-                  ))}
-                </select>
+                    {filteredHorarios?.map((horario) => (
+                      <option key={horario.id} value={horario.id}>
+                        {horario.horaInicio} - {horario.horaFin}
+                      </option>
+                    ))}
+                  </select>
+                )}
               </div>
             </div>
 
