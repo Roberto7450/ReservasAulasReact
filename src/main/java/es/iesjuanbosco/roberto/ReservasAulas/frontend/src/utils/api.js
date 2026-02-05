@@ -19,11 +19,35 @@ export const formatDateToDDMMYYYY = (dateString) => {
   return `${day}/${month}/${year}`;
 };
 
+// Función para convertir dd/MM/yyyy a ISO yyyy-MM-dd (para input date)
+export const formatDateToISO = (dateString) => {
+  if (!dateString) return '';
+  if (dateString.includes('-')) {
+    // Ya está en formato ISO
+    return dateString;
+  }
+  // Convertir de dd/MM/yyyy a yyyy-MM-dd
+  const parts = dateString.split('/');
+  if (parts.length === 3) {
+    return `${parts[2]}-${parts[1]}-${parts[0]}`;
+  }
+  return dateString;
+};
+
 // Función para convertir hora HH:mm a HH:mm:ss
 export const formatTimeToHHmmss = (timeString) => {
   if (!timeString) return '';
   if (timeString.includes(':') && timeString.split(':').length === 2) {
     return `${timeString}:00`;
+  }
+  return timeString;
+};
+
+// Función para convertir HH:mm:ss a HH:mm (para input time)
+export const formatTimeToHHmm = (timeString) => {
+  if (!timeString) return '';
+  if (timeString.includes(':') && timeString.split(':').length === 3) {
+    return timeString.substring(0, 5); // Tomar solo HH:mm
   }
   return timeString;
 };

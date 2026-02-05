@@ -3,6 +3,7 @@ import { useFetch } from '../hooks/useFetch';
 import { reservaService } from '../services/reservaService';
 import { aulaService } from '../services/aulaService';
 import { horarioService } from '../services/horarioService';
+import { formatDateToISO } from '../utils/api';
 
 export default function Reservas() {
   const { data: reservas, error, isLoading, mutate } = useFetch('/reservas');
@@ -72,7 +73,7 @@ export default function Reservas() {
     setFormData({
       aulaId: reserva.aulaId,
       horarioId: reserva.horarioId,
-      fecha: reserva.fecha,
+      fecha: formatDateToISO(reserva.fecha),
       motivo: reserva.motivo,
       asistentes: reserva.asistentes,
     });

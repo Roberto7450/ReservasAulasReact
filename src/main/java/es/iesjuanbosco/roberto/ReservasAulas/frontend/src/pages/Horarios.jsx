@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useFetch } from '../hooks/useFetch';
 import { horarioService } from '../services/horarioService';
+import { formatTimeToHHmm } from '../utils/api';
 
 const DIAS = ['LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO', 'DOMINGO'];
 
@@ -56,8 +57,8 @@ export default function Horarios() {
   const handleEdit = (horario) => {
     setFormData({
       diaSemana: horario.diaSemana,
-      horaInicio: horario.horaInicio,
-      horaFin: horario.horaFin,
+      horaInicio: formatTimeToHHmm(horario.horaInicio),
+      horaFin: formatTimeToHHmm(horario.horaFin),
     });
     setEditingId(horario.id);
     setShowForm(true);
