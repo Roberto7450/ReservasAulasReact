@@ -1,4 +1,4 @@
-import apiClient from '../utils/api';
+import apiClient, { formatDateToDDMMYYYY } from '../utils/api';
 
 export const reservaService = {
   obtenerTodas: async () => {
@@ -12,12 +12,22 @@ export const reservaService = {
   },
 
   crear: async (reserva) => {
-    const response = await apiClient.post('/reservas', reserva);
+    // Convertir fecha a formato dd/MM/yyyy que espera el servidor
+    const payload = {
+      ...reserva,
+      fecha: formatDateToDDMMYYYY(reserva.fecha),
+    };
+    const response = await apiClient.post('/reservas', payload);
     return response.data;
   },
 
   actualizar: async (id, reserva) => {
-    const response = await apiClient.put(`/reservas/${id}`, reserva);
+    // Convertir fecha a formato dd/MM/yyyy que espera el servidor
+    const payload = {
+      ...reserva,
+      fecha: formatDateToDDMMYYYY(reserva.fecha),
+    };
+    const response = await apiClient.put(`/reservas/${id}`, payload);
     return response.data;
   },
 

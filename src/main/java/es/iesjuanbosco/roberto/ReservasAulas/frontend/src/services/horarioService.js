@@ -1,4 +1,4 @@
-import apiClient from '../utils/api';
+import apiClient, { formatTimeToHHmmss } from '../utils/api';
 
 export const horarioService = {
   obtenerTodas: async () => {
@@ -12,12 +12,24 @@ export const horarioService = {
   },
 
   crear: async (horario) => {
-    const response = await apiClient.post('/horarios', horario);
+    // Convertir horas a formato HH:mm:ss que Jackson puede deserializar
+    const payload = {
+      ...horario,
+      horaInicio: formatTimeToHHmmss(horario.horaInicio),
+      horaFin: formatTimeToHHmmss(horario.horaFin),
+    };
+    const response = await apiClient.post('/horarios', payload);
     return response.data;
   },
 
   actualizar: async (id, horario) => {
-    const response = await apiClient.put(`/horarios/${id}`, horario);
+    // Convertir horas a formato HH:mm:ss que Jackson puede deserializar
+    const payload = {
+      ...horario,
+      horaInicio: formatTimeToHHmmss(horario.horaInicio),
+      horaFin: formatTimeToHHmmss(horario.horaFin),
+    };
+    const response = await apiClient.put(`/horarios/${id}`, payload);
     return response.data;
   },
 
