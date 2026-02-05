@@ -1,6 +1,8 @@
 package es.iesjuanbosco.roberto.ReservasAulas.dtos;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import es.iesjuanbosco.roberto.ReservasAulas.config.CustomLocalDateDeserializer;
 import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -30,6 +32,7 @@ public class ReservaRequest {
 
     @NotNull(message = "La fecha es obligatoria")
     @FutureOrPresent(message = "No se pueden hacer reservas en el pasado")
-    @JsonFormat(pattern = "dd/MM/yyyy")
+    @JsonFormat(pattern = "dd/MM/yyyy", shape = JsonFormat.Shape.STRING)
+    @JsonDeserialize(using = CustomLocalDateDeserializer.class)
     private LocalDate fecha;
 }
