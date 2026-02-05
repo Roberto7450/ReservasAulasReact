@@ -22,7 +22,6 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/aulas")
 @AllArgsConstructor
-@CrossOrigin(origins = "*")
 public class ControllerAula {
 
     private final ServiceAula serviceAula;

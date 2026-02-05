@@ -17,7 +17,6 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/horarios")
 @AllArgsConstructor
-@CrossOrigin(origins = "*")
 public class ControllerHorario {
 
     private final ServiceHorario serviceHorario;

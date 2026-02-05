@@ -31,6 +31,9 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+                // CORS se maneja mediante CorsFilter en CorsConfig.java
+                .cors(AbstractHttpConfigurer::disable)
+
                 // Deshabilitar CSRF (no necesario en APIs REST con JWT)
                 .csrf(AbstractHttpConfigurer::disable)
 

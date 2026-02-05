@@ -1,0 +1,17 @@
+services:
+  db:
+    image: mysql:8.0
+    container_name: mysql_server
+    restart: always
+    environment:
+      # Configuración de credenciales
+      MYSQL_ROOT_PASSWORD: root1234
+      # Comando para crear la base de datos automáticamente al inicio
+      MYSQL_DATABASE: reservas
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+
+volumes:
+  db_data:

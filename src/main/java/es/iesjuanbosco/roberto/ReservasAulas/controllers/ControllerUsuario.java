@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping
-@CrossOrigin(origins = "*")
 @AllArgsConstructor
 public class ControllerUsuario {
     private final ServiceUsuario service;

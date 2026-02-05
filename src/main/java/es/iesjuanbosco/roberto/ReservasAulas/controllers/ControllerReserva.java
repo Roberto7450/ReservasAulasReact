@@ -21,7 +21,6 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/reservas")
 @AllArgsConstructor
-@CrossOrigin(origins = "*")
 public class ControllerReserva {
 
     private final ServiceReserva serviceReserva;
