@@ -87,8 +87,9 @@ public class ControllerReserva {
                         .body("Solo puedes editar tus propias reservas");
             }
 
-            Reserva actualizada = serviceReserva.actualizarConUsuario(request, id, emailUsuario);
-            return ResponseEntity.ok(ReservaMapper.toDto(actualizada));
+            // Se actualiza la reserva con los nuevos datos del request
+            Reserva reservaActualizada = serviceReserva.actualizarDesdeRequest(reservaExistente, request);
+            return ResponseEntity.ok(ReservaMapper.toDto(reservaActualizada));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body("Error de validación: " + e.getMessage());

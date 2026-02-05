@@ -146,4 +146,48 @@ public class ServiceReserva {
 
         return repository.save(reserva);
     }
+
+    @Transactional
+    public Reserva actualizarDesdeRequest(Reserva reservaExistente, ReservaRequest request) {
+        // Obtener el aula y horario del request
+        Aula aula = repositorioAula.findById(request.getAulaId())
+                .orElseThrow(() -> new EntityNotFoundException("Aula no encontrada con id: " + request.getAulaId()));
+
+        Horario horario = repositorioHorario.findById(request.getHorarioId())
+                .orElseThrow(() -> new EntityNotFoundException("Horario no encontrado con id: " + request.getHorarioId()));
+
+        // Actualizar los campos de la reserva existente
+        reservaExistente.setAula(aula);
+        reservaExistente.setHorario(horario);
+        reservaExistente.setFecha(request.getFecha());
+        reservaExistente.setMotivo(request.getMotivo());
+        reservaExistente.setAsistentes(request.getAsistentes());
+
+        // Validaciones
+        if (reservaExistente.getAsistentes() > aula.getCapacidad()) {
+            throw new IllegalArgumentException("El número de asistentes supera la capacidad del aula.");
+        }
+
+        // Validar solapamientos (sin incluir a sí misma)
+        List<Reserva> reservasAula = repository.getReservaByAula_Id(aula.getId());
+        for (Reserva rExistente : reservasAula) {
+            // Ignorar la misma reserva que se está actualizando
+            if (reservaExistente.getId().equals(rExistente.getId())) {
+                continue;
+            }
+            
+            if (rExistente.getFecha().isEqual(reservaExistente.getFecha())) {
+                Horario hExistente = rExistente.getHorario();
+                Horario hNuevo = reservaExistente.getHorario();
+
+                if (hExistente != null && hNuevo != null) {
+                    if (hNuevo.seSolapaCon(hExistente)) {
+                        throw new IllegalArgumentException("La reserva se solapa con otra reserva existente en el mismo aula y horario.");
+                    }
+                }
+            }
+        }
+
+        return repository.save(reservaExistente);
+    }
 }
