@@ -68,7 +68,7 @@ public class ControllerReserva {
 
     @PutMapping("/{id}")
     public ResponseEntity<?> updateReserva(
-            @RequestBody Reserva reserva,
+            @RequestBody @Valid ReservaRequest request,
             @PathVariable Long id,
             Authentication authentication) {
         try {
@@ -87,8 +87,7 @@ public class ControllerReserva {
                         .body("Solo puedes editar tus propias reservas");
             }
 
-            reserva.setId(id);
-            Reserva actualizada = serviceReserva.actualizar(reserva, id);
+            Reserva actualizada = serviceReserva.actualizarConUsuario(request, id, emailUsuario);
             return ResponseEntity.ok(ReservaMapper.toDto(actualizada));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
