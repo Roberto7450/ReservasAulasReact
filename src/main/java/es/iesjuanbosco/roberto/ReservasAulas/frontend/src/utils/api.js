@@ -1,6 +1,20 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:8080';
+// Determinar dinámicamente la URL del API basado en el host actual
+const getApiBaseUrl = () => {
+  // Si estamos en localhost, usar localhost:8080
+  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+    return 'http://localhost:8080';
+  }
+  
+  // Si estamos en un dominio remoto (GitHub Codespaces, etc), usar el mismo host con puerto 8080
+  // y el mismo protocolo (https)
+  const protocol = window.location.protocol; // 'https:' o 'http:'
+  const hostname = window.location.hostname;
+  return `${protocol}//${hostname}:8080`;
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,

@@ -23,6 +23,17 @@ const getDayName = (dateStr) => {
 // Convertir nombre del día a capitalizado
 const capitalize = (str) => str.charAt(0).toUpperCase() + str.slice(1);
 
+// Mapeo de días de semana (enum) a sus nombres con tildes para mostrar en UI
+const DIA_LABELS = {
+  LUNES: 'Lunes',
+  MARTES: 'Martes',
+  MIERCOLES: 'Miércoles',
+  JUEVES: 'Jueves',
+  VIERNES: 'Viernes',
+  SABADO: 'Sábado',
+  DOMINGO: 'Domingo',
+};
+
 export default function Reservas() {
   const { data: reservas, error, isLoading, mutate } = useFetch('/reservas');
   const { data: aulas } = useFetch('/aulas');
@@ -381,7 +392,7 @@ export default function Reservas() {
                 <td className="px-6 py-4 text-gray-900">{reserva.aulaNombre}</td>
                 <td className="px-6 py-4 text-gray-900">{reserva.fecha}</td>
                 <td className="px-6 py-4 text-gray-900">
-                  {reserva.horarioDiaSemana} ({reserva.horarioHoraInicio} -{' '}
+                  {DIA_LABELS[reserva.horarioDiaSemana]} ({reserva.horarioHoraInicio} -{' '}
                   {reserva.horarioHoraFin})
                 </td>
                 <td className="px-6 py-4 text-gray-900">{reserva.motivo}</td>

@@ -5,6 +5,17 @@ import { formatTimeToHHmm } from '../utils/api';
 
 const DIAS = ['LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO', 'DOMINGO'];
 
+// Mapeo de días de semana a sus nombres con tildes para mostrar en UI
+const DIA_LABELS = {
+  LUNES: 'Lunes',
+  MARTES: 'Martes',
+  MIERCOLES: 'Miércoles',
+  JUEVES: 'Jueves',
+  VIERNES: 'Viernes',
+  SABADO: 'Sábado',
+  DOMINGO: 'Domingo',
+};
+
 export default function Horarios() {
   const { data: horarios, error, isLoading, mutate } = useFetch('/horarios');
   const [showForm, setShowForm] = useState(false);
@@ -178,7 +189,7 @@ export default function Horarios() {
               >
                 {DIAS.map((dia) => (
                   <option key={dia} value={dia}>
-                    {dia}
+                    {DIA_LABELS[dia]}
                   </option>
                 ))}
               </select>
@@ -254,7 +265,7 @@ export default function Horarios() {
           <tbody>
             {horarios?.map((horario) => (
               <tr key={horario.id} className="border-b border-gray-200 hover:bg-gray-50">
-                <td className="px-6 py-4 text-gray-900">{horario.diaSemana}</td>
+                <td className="px-6 py-4 text-gray-900">{DIA_LABELS[horario.diaSemana]}</td>
                 <td className="px-6 py-4 text-gray-900">{horario.horaInicio}</td>
                 <td className="px-6 py-4 text-gray-900">{horario.horaFin}</td>
                 <td className="px-6 py-4 flex gap-2">
