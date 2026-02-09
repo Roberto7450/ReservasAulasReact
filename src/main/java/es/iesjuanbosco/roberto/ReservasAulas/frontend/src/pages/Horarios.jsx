@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useFetch } from '../hooks/useFetch';
 import { horarioService } from '../services/horarioService';
 import { formatTimeToHHmm } from '../utils/api';
+import { useAuth } from '../context/AuthContext';
 
 const DIAS = ['LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO', 'DOMINGO'];
 
@@ -17,6 +18,7 @@ const DIA_LABELS = {
 };
 
 export default function Horarios() {
+  const { isAdmin } = useAuth();
   const { data: horarios, error, isLoading, mutate } = useFetch('/horarios');
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
@@ -144,21 +146,23 @@ export default function Horarios() {
     <div className="max-w-7xl mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold text-gray-900">Horarios</h1>
-        <button
-          onClick={() => {
-            if (!showForm) {
-              // Limpiar formulario y errores cuando se abre
-              setFormData({ diaSemana: 'LUNES', horaInicio: '', horaFin: '' });
-              setEditingId(null);
-              setSubmitError('');
-              setSubmitErrorDetails('');
-            }
-            setShowForm(!showForm);
-          }}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-        >
-          {showForm ? 'Cancelar' : 'Nuevo Horario'}
-        </button>
+        {isAdmin && (
+          <button
+            onClick={() => {
+              if (!showForm) {
+                // Limpiar formulario y errores cuando se abre
+                setFormData({ diaSemana: 'LUNES', horaInicio: '', horaFin: '' });
+                setEditingId(null);
+                setSubmitError('');
+                setSubmitErrorDetails('');
+              }
+              setShowForm(!showForm);
+            }}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          >
+            {showForm ? 'Cancelar' : 'Nuevo Horario'}
+          </button>
+        )}
       </div>
 
       {showForm && (
@@ -257,9 +261,11 @@ export default function Horarios() {
               <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
                 Hora Fin
               </th>
-              <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
-                Acciones
-              </th>
+              {isAdmin && (
+                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
+                  Acciones
+                </th>
+              )}
             </tr>
           </thead>
           <tbody>
@@ -268,20 +274,22 @@ export default function Horarios() {
                 <td className="px-6 py-4 text-gray-900">{DIA_LABELS[horario.diaSemana]}</td>
                 <td className="px-6 py-4 text-gray-900">{horario.horaInicio}</td>
                 <td className="px-6 py-4 text-gray-900">{horario.horaFin}</td>
-                <td className="px-6 py-4 flex gap-2">
-                  <button
-                    onClick={() => handleEdit(horario)}
-                    className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
-                  >
-                    Editar
-                  </button>
-                  <button
-                    onClick={() => handleDelete(horario.id)}
-                    className="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700"
-                  >
-                    Eliminar
-                  </button>
-                </td>
+                {isAdmin && (
+                  <td className="px-6 py-4 flex gap-2">
+                    <button
+                      onClick={() => handleEdit(horario)}
+                      className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
+                    >
+                      Editar
+                    </button>
+                    <button
+                      onClick={() => handleDelete(horario.id)}
+                      className="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700"
+                    >
+                      Eliminar
+                    </button>
+                  </td>
+                )}
               </tr>
             ))}
           </tbody>

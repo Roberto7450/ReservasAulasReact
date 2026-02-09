@@ -7,16 +7,42 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // Función para decodificar token y extraer información del usuario
+  const decodeToken = (token) => {
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+
+      // Extraer roles del payload - pueden venir como string separado por comas o como array
+      let roles = [];
+      if (payload.roles) {
+        if (typeof payload.roles === 'string') {
+          // Si es string, dividir por comas
+          roles = payload.roles.split(',').map(r => r.trim());
+        } else if (Array.isArray(payload.roles)) {
+          // Si ya es array, usar directamente
+          roles = payload.roles;
+        }
+      }
+
+      return {
+        email: payload.sub,
+        roles: roles,
+      };
+    } catch (e) {
+      console.error('Error al decodificar token:', e);
+      return null;
+    }
+  };
+
   // Cargar token del localStorage al iniciar
   useEffect(() => {
     const storedToken = localStorage.getItem('jwt_token');
     if (storedToken) {
-      setToken(storedToken);
-      // Decodificar el token para obtener el email del usuario
-      try {
-        const payload = JSON.parse(atob(storedToken.split('.')[1]));
-        setUser({ email: payload.sub });
-      } catch (e) {
+      const userData = decodeToken(storedToken);
+      if (userData) {
+        setToken(storedToken);
+        setUser(userData);
+      } else {
         localStorage.removeItem('jwt_token');
       }
     }
@@ -24,13 +50,13 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = (newToken) => {
-    setToken(newToken);
-    localStorage.setItem('jwt_token', newToken);
-    try {
-      const payload = JSON.parse(atob(newToken.split('.')[1]));
-      setUser({ email: payload.sub });
-    } catch (e) {
-      console.error('Error al decodificar token');
+    const userData = decodeToken(newToken);
+    if (userData) {
+      setToken(newToken);
+      setUser(userData);
+      localStorage.setItem('jwt_token', newToken);
+    } else {
+      console.error('Error al decodificar token durante login');
     }
   };
 
@@ -42,8 +68,16 @@ export const AuthProvider = ({ children }) => {
 
   const isAuthenticated = !!token;
 
+  // Función para verificar si el usuario tiene un rol específico
+  const hasRole = (role) => {
+    return user?.roles?.includes(role) || false;
+  };
+
+  // Verificar si el usuario es administrador
+  const isAdmin = hasRole('ROLE_ADMIN');
+
   return (
-    <AuthContext.Provider value={{ token, user, login, logout, isAuthenticated, loading }}>
+    <AuthContext.Provider value={{ token, user, login, logout, isAuthenticated, loading, hasRole, isAdmin }}>
       {children}
     </AuthContext.Provider>
   );

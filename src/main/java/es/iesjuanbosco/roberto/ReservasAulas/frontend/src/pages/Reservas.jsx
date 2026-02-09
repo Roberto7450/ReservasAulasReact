@@ -1,9 +1,8 @@
 import { useState, useMemo } from 'react';
 import { useFetch } from '../hooks/useFetch';
 import { reservaService } from '../services/reservaService';
-import { aulaService } from '../services/aulaService';
-import { horarioService } from '../services/horarioService';
 import { formatDateToISO } from '../utils/api';
+import { useAuth } from '../context/AuthContext';
 
 // Obtener el nombre del día de la semana en español
 const getDayName = (dateStr) => {
@@ -35,6 +34,7 @@ const DIA_LABELS = {
 };
 
 export default function Reservas() {
+  const { isAdmin, user } = useAuth();
   const { data: reservas, error, isLoading, mutate } = useFetch('/reservas');
   const { data: aulas } = useFetch('/aulas');
   const { data: horarios } = useFetch('/horarios');
@@ -387,32 +387,41 @@ export default function Reservas() {
             </tr>
           </thead>
           <tbody>
-            {reservas?.map((reserva) => (
-              <tr key={reserva.id} className="border-b border-gray-200 hover:bg-gray-50">
-                <td className="px-6 py-4 text-gray-900">{reserva.aulaNombre}</td>
-                <td className="px-6 py-4 text-gray-900">{reserva.fecha}</td>
-                <td className="px-6 py-4 text-gray-900">
-                  {DIA_LABELS[reserva.horarioDiaSemana]} ({reserva.horarioHoraInicio} -{' '}
-                  {reserva.horarioHoraFin})
-                </td>
-                <td className="px-6 py-4 text-gray-900">{reserva.motivo}</td>
-                <td className="px-6 py-4 text-gray-900">{reserva.asistentes}</td>
-                <td className="px-6 py-4 flex gap-2">
-                  <button
-                    onClick={() => handleEdit(reserva)}
-                    className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
-                  >
-                    Editar
-                  </button>
-                  <button
-                    onClick={() => handleDelete(reserva.id)}
-                    className="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700"
-                  >
-                    Eliminar
-                  </button>
-                </td>
-              </tr>
-            ))}
+            {reservas?.map((reserva) => {
+              // Verificar si el usuario puede editar/eliminar esta reserva
+              const canModify = isAdmin || reserva.usuarioEmail === user?.email;
+
+              return (
+                <tr key={reserva.id} className="border-b border-gray-200 hover:bg-gray-50">
+                  <td className="px-6 py-4 text-gray-900">{reserva.aulaNombre}</td>
+                  <td className="px-6 py-4 text-gray-900">{reserva.fecha}</td>
+                  <td className="px-6 py-4 text-gray-900">
+                    {DIA_LABELS[reserva.horarioDiaSemana]} ({reserva.horarioHoraInicio} -{' '}
+                    {reserva.horarioHoraFin})
+                  </td>
+                  <td className="px-6 py-4 text-gray-900">{reserva.motivo}</td>
+                  <td className="px-6 py-4 text-gray-900">{reserva.asistentes}</td>
+                  <td className="px-6 py-4">
+                    {canModify && (
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => handleEdit(reserva)}
+                          className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
+                        >
+                          Editar
+                        </button>
+                        <button
+                          onClick={() => handleDelete(reserva.id)}
+                          className="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700"
+                        >
+                          Eliminar
+                        </button>
+                      </div>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>

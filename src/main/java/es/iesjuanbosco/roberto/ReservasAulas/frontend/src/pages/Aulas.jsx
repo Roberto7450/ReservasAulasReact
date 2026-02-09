@@ -1,8 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useFetch } from '../hooks/useFetch';
 import { aulaService } from '../services/aulaService';
+import { useAuth } from '../context/AuthContext';
 
 export default function Aulas() {
+  const { isAdmin } = useAuth();
   const { data: aulas, error, isLoading, mutate } = useFetch('/aulas');
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
@@ -122,21 +124,23 @@ export default function Aulas() {
     <div className="max-w-7xl mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold text-gray-900">Aulas</h1>
-        <button
-          onClick={() => {
-            if (!showForm) {
-              // Limpiar formulario y errores cuando se abre
-              setFormData({ nombre: '', capacidad: '', esOrdenadores: false });
-              setEditingId(null);
-              setSubmitError('');
-              setSubmitErrorDetails('');
-            }
-            setShowForm(!showForm);
-          }}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-        >
-          {showForm ? 'Cancelar' : 'Nueva Aula'}
-        </button>
+        {isAdmin && (
+          <button
+            onClick={() => {
+              if (!showForm) {
+                // Limpiar formulario y errores cuando se abre
+                setFormData({ nombre: '', capacidad: '', esOrdenadores: false });
+                setEditingId(null);
+                setSubmitError('');
+                setSubmitErrorDetails('');
+              }
+              setShowForm(!showForm);
+            }}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          >
+            {showForm ? 'Cancelar' : 'Nueva Aula'}
+          </button>
+        )}
       </div>
 
       {showForm && (
@@ -231,20 +235,22 @@ export default function Aulas() {
                 {aula.esOrdenadores ? 'Sí' : 'No'}
               </p>
             </div>
-            <div className="flex gap-2">
-              <button
-                onClick={() => handleEdit(aula)}
-                className="flex-1 px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
-              >
-                Editar
-              </button>
-              <button
-                onClick={() => handleDelete(aula.id)}
-                className="flex-1 px-3 py-2 bg-red-600 text-white text-sm rounded hover:bg-red-700"
-              >
-                Eliminar
-              </button>
-            </div>
+            {isAdmin && (
+              <div className="flex gap-2">
+                <button
+                  onClick={() => handleEdit(aula)}
+                  className="flex-1 px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
+                >
+                  Editar
+                </button>
+                <button
+                  onClick={() => handleDelete(aula.id)}
+                  className="flex-1 px-3 py-2 bg-red-600 text-white text-sm rounded hover:bg-red-700"
+                >
+                  Eliminar
+                </button>
+              </div>
+            )}
           </div>
         ))}
       </div>

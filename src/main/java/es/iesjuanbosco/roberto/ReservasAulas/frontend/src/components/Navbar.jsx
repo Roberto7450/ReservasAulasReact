@@ -45,7 +45,14 @@ export default function Navbar() {
           <div className="flex items-center gap-4">
             {isAuthenticated ? (
               <>
-                <span className="text-sm text-gray-700">{user?.email}</span>
+                <div className="text-sm text-gray-700">
+                  <span className="font-medium">{user?.email}</span>
+                  {user?.roles && user.roles.length > 0 && (
+                    <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                      {user.roles.includes('ROLE_ADMIN') ? 'Admin' : 'Profesor'}
+                    </span>
+                  )}
+                </div>
                 <button
                   onClick={handleLogout}
                   className="px-4 py-2 text-sm font-medium text-white bg-red-500 rounded-lg hover:bg-red-600 transition"
