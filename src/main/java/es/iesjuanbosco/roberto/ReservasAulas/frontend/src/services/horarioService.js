@@ -1,7 +1,8 @@
 import apiClient, { formatTimeToHHmmss } from '../utils/api';
 
 export const horarioService = {
-  obtenerTodas: async () => {
+
+  obtenerTodos: async () => {
     const response = await apiClient.get('/horarios');
     return response.data;
   },

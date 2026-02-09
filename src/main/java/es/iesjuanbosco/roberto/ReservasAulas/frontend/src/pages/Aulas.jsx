@@ -1,259 +1,226 @@
-import { useState } from 'react';
-import { useFetch } from '../hooks/useFetch';
+import { useState, useEffect } from 'react';
 import { aulaService } from '../services/aulaService';
 import { useAuth } from '../context/AuthContext';
+import FormularioAula from '../components/FormularioAula';
+import TarjetaAula from '../components/TarjetaAula';
 
 export default function Aulas() {
   const { isAdmin } = useAuth();
-  const { data: aulas, error, isLoading, mutate } = useFetch('/aulas');
-  const [showForm, setShowForm] = useState(false);
-  const [editingId, setEditingId] = useState(null);
-  const [formData, setFormData] = useState({
-    nombre: '',
-    capacidad: '',
-    esOrdenadores: false,
+
+  // Estado de todas las aulas cargadas desde el servidor
+  const [todasLasAulas, setTodasLasAulas] = useState([]);
+  const [cargando, setCargando] = useState(false);
+  const [error, setError] = useState('');
+
+  // Estados para controlar el formulario de edición/creación
+  const [mostrarFormulario, setMostrarFormulario] = useState(false);
+  const [aulaEditando, setAulaEditando] = useState(null);
+
+  // Estado de filtros aplicados
+  const [filtros, setFiltros] = useState({
+    capacidadMinima: '',
+    soloConOrdenadores: false
   });
-  const [submitLoading, setSubmitLoading] = useState(false);
-  const [submitError, setSubmitError] = useState('');
-  const [submitErrorDetails, setSubmitErrorDetails] = useState('');
 
-  const handleInputChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setFormData({
-      ...formData,
-      [name]: type === 'checkbox' ? checked : value,
-    });
-  };
+  // Cargar aulas al montar el componente
+  useEffect(() => {
+    cargarAulas();
+  }, []);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setSubmitLoading(true);
-    setSubmitError('');
-    setSubmitErrorDetails('');
+  // Función para cargar todas las aulas desde el backend
+  const cargarAulas = async () => {
+    setCargando(true);
+    setError('');
 
     try {
-      if (editingId) {
-        await aulaService.actualizar(editingId, formData);
-      } else {
-        await aulaService.crear(formData);
-      }
-      mutate();
-      setFormData({ nombre: '', capacidad: '', esOrdenadores: false });
-      setShowForm(false);
-      setEditingId(null);
+      const data = await aulaService.obtenerTodas();
+      setTodasLasAulas(data);
     } catch (err) {
-      let errorMessage = 'Error al guardar el aula';
-      let errorDetails = '';
-
-      if (err.response?.data) {
-        if (typeof err.response.data === 'string') {
-          errorMessage = err.response.data;
-        } else if (err.response.data.message) {
-          errorMessage = err.response.data.message;
-        } else if (err.response.data.error) {
-          errorMessage = err.response.data.error;
-        }
-      }
-
-      if (errorMessage.includes('Error de validación:')) {
-        const parts = errorMessage.split('Error de validación: ');
-        if (parts.length > 1) {
-          errorDetails = parts[1];
-          errorMessage = 'Error de validación:';
-        }
-      }
-
-      setSubmitError(errorMessage);
-      setSubmitErrorDetails(errorDetails);
+      setError('Error al cargar las aulas');
+      console.error(err);
     } finally {
-      setSubmitLoading(false);
+      setCargando(false);
     }
   };
 
-  const handleEdit = (aula) => {
-    setFormData({
-      nombre: aula.nombre,
-      capacidad: aula.capacidad,
-      esOrdenadores: aula.esOrdenadores || false,
-    });
-    setEditingId(aula.id);
-    setShowForm(true);
-    setSubmitError('');
-    setSubmitErrorDetails('');
+  // Filtrar aulas en el cliente usando array.filter()
+  const aulasFiltradas = todasLasAulas.filter(aula => {
+    if (filtros.capacidadMinima && aula.capacidad < parseInt(filtros.capacidadMinima)) {
+      return false;
+    }
+
+    if (filtros.soloConOrdenadores && !aula.esOrdenadores) {
+      return false;
+    }
+
+    return true;
+  });
+
+  // Guardar aula (crear o actualizar)
+  const handleGuardar = async (aulaData) => {
+    try {
+      if (aulaEditando) {
+        await aulaService.actualizar(aulaEditando.id, aulaData);
+      } else {
+        await aulaService.crear(aulaData);
+      }
+
+      await cargarAulas();
+      setMostrarFormulario(false);
+      setAulaEditando(null);
+    } catch (err) {
+      let mensajeError = 'Error al guardar';
+
+      if (err.response?.data) {
+        if (typeof err.response.data === 'string') {
+          mensajeError = err.response.data;
+        } else if (err.response.data.message) {
+          mensajeError = err.response.data.message;
+        } else if (err.response.data.error) {
+          mensajeError = err.response.data.error;
+        }
+      }
+
+      throw new Error(mensajeError);
+    }
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('¿Estás seguro de que deseas eliminar esta aula?')) return;
+  // Editar aula existente
+  const handleEditar = (aula) => {
+    setAulaEditando(aula);
+    setMostrarFormulario(true);
+  };
 
+  // Eliminar aula
+  const handleEliminar = async (id) => {
     try {
       await aulaService.eliminar(id);
-      mutate();
+      setTodasLasAulas(todasLasAulas.filter(aula => aula.id !== id));
     } catch (err) {
-      let errorMessage = 'Error al eliminar el aula';
-      
-      if (err.response?.data) {
-        if (typeof err.response.data === 'string') {
-          errorMessage = err.response.data;
-        } else if (err.response.data.message) {
-          errorMessage = err.response.data.message;
-        }
-      }
-      
-      setSubmitError(errorMessage);
-      setSubmitErrorDetails('');
+      setError(err.response?.data || 'Error al eliminar');
     }
   };
 
-  const handleCancel = () => {
-    setFormData({ nombre: '', capacidad: '', esOrdenadores: false });
-    setShowForm(false);
-    setEditingId(null);
-    setSubmitError('');
-    setSubmitErrorDetails('');
+  // Cancelar edición o creación
+  const handleCancelar = () => {
+    setMostrarFormulario(false);
+    setAulaEditando(null);
   };
 
-  if (isLoading) {
+  // Limpiar todos los filtros aplicados
+  const limpiarFiltros = () => {
+    setFiltros({ capacidadMinima: '', soloConOrdenadores: false });
+  };
+
+  if (cargando) {
     return <div className="p-8">Cargando aulas...</div>;
   }
 
-  if (error) {
-    return <div className="p-8 text-red-600">Error al cargar las aulas</div>;
-  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
+
+      {/* Cabecera con título y botón para nueva aula */}
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold text-gray-900">Aulas</h1>
+
         {isAdmin && (
           <button
             onClick={() => {
-              if (!showForm) {
-                // Limpiar formulario y errores cuando se abre
-                setFormData({ nombre: '', capacidad: '', esOrdenadores: false });
-                setEditingId(null);
-                setSubmitError('');
-                setSubmitErrorDetails('');
-              }
-              setShowForm(!showForm);
+              setAulaEditando(null);
+              setMostrarFormulario(!mostrarFormulario);
             }}
             className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
           >
-            {showForm ? 'Cancelar' : 'Nueva Aula'}
+            {mostrarFormulario ? 'Cancelar' : 'Nueva Aula'}
           </button>
         )}
       </div>
 
-      {showForm && (
-        <div className="bg-white rounded-lg shadow p-6 mb-8">
-          <h2 className="text-2xl font-bold mb-4 text-gray-900">
-            {editingId ? 'Editar Aula' : 'Nueva Aula'}
-          </h2>
-
-          {submitError && (
-            <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
-              <p className="font-semibold">{submitError}</p>
-              {submitErrorDetails && (
-                <p className="mt-2 text-sm">{submitErrorDetails}</p>
-              )}
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Nombre del Aula
-              </label>
-              <input
-                type="text"
-                name="nombre"
-                value={formData.nombre}
-                onChange={handleInputChange}
-                required
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-blue-500"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Capacidad
-              </label>
-              <input
-                type="number"
-                name="capacidad"
-                value={formData.capacidad}
-                onChange={handleInputChange}
-                required
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-blue-500"
-              />
-            </div>
-
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                name="esOrdenadores"
-                checked={formData.esOrdenadores}
-                onChange={handleInputChange}
-                className="h-4 w-4 rounded border-gray-300"
-              />
-              <label className="ml-2 text-sm text-gray-700">
-                ¿Tiene ordenadores?
-              </label>
-            </div>
-
-            <div className="flex gap-2">
-              <button
-                type="submit"
-                disabled={submitLoading}
-                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
-              >
-                {submitLoading ? 'Guardando...' : 'Guardar'}
-              </button>
-              <button
-                type="button"
-                onClick={handleCancel}
-                className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400"
-              >
-                Cancelar
-              </button>
-            </div>
-          </form>
+      {/* Mensajes de error globales */}
+      {error && (
+        <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+          {error}
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {aulas?.map((aula) => (
-          <div key={aula.id} className="bg-white rounded-lg shadow p-6">
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">
-              {aula.nombre}
-            </h3>
-            <div className="space-y-2 text-gray-600 mb-4">
-              <p>
-                <span className="font-medium">Capacidad:</span> {aula.capacidad}
-              </p>
-              <p>
-                <span className="font-medium">Ordenadores:</span>{' '}
-                {aula.esOrdenadores ? 'Sí' : 'No'}
-              </p>
-            </div>
-            {isAdmin && (
-              <div className="flex gap-2">
-                <button
-                  onClick={() => handleEdit(aula)}
-                  className="flex-1 px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
-                >
-                  Editar
-                </button>
-                <button
-                  onClick={() => handleDelete(aula.id)}
-                  className="flex-1 px-3 py-2 bg-red-600 text-white text-sm rounded hover:bg-red-700"
-                >
-                  Eliminar
-                </button>
-              </div>
-            )}
+      {/* Formulario de creación/edición de aulas */}
+      {mostrarFormulario && (
+        <FormularioAula
+          aulaEditando={aulaEditando}
+          onGuardar={handleGuardar}
+          onCancelar={handleCancelar}
+        />
+      )}
+
+      {/* Panel de filtros */}
+      <div className="bg-white rounded-lg shadow p-6 mb-8">
+        <h3 className="text-xl font-semibold mb-4 text-gray-900">Filtros</h3>
+
+        <div className="flex gap-4 items-end flex-wrap">
+          {/* Filtro por capacidad mínima */}
+          <div className="flex-1 min-w-[200px]">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Capacidad mínima
+            </label>
+            <input
+              type="number"
+              value={filtros.capacidadMinima}
+              onChange={(e) => setFiltros({ ...filtros, capacidadMinima: e.target.value })}
+              placeholder="Ej: 20"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+            />
           </div>
+
+          {/* Filtro por aulas con ordenadores */}
+          <div className="flex items-center">
+            <input
+              type="checkbox"
+              checked={filtros.soloConOrdenadores}
+              onChange={(e) => setFiltros({ ...filtros, soloConOrdenadores: e.target.checked })}
+              className="h-4 w-4 rounded border-gray-300"
+            />
+            <label className="ml-2 text-sm text-gray-700">
+              Solo con ordenadores
+            </label>
+          </div>
+
+          {/* Botón para limpiar filtros */}
+          <button
+            onClick={limpiarFiltros}
+            className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400"
+          >
+            Limpiar filtros
+          </button>
+        </div>
+
+        {/* Contador de resultados */}
+        <p className="mt-4 text-sm text-gray-600">
+          Mostrando {aulasFiltradas.length} de {todasLasAulas.length} aulas
+        </p>
+      </div>
+
+      {/* Grid de tarjetas de aulas */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {aulasFiltradas.map((aula) => (
+          <TarjetaAula
+            key={aula.id}
+            aula={aula}
+            onEditar={handleEditar}
+            onEliminar={handleEliminar}
+            isAdmin={isAdmin}
+          />
         ))}
       </div>
+
+      {/* Mensaje cuando no hay resultados */}
+      {aulasFiltradas.length === 0 && !cargando && (
+        <p className="text-center text-gray-500 mt-8">
+          {todasLasAulas.length === 0
+            ? 'No hay aulas disponibles'
+            : 'No hay aulas que coincidan con los filtros'}
+        </p>
+      )}
     </div>
   );
 }

@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 export default function Home() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isAdmin } = useAuth();
 
   if (!isAuthenticated) {
     return (
@@ -49,7 +49,10 @@ export default function Home() {
           >
             <h3 className="text-xl font-semibold text-gray-900 mb-2">Aulas</h3>
             <p className="text-gray-600">
-              Visualiza, crea y administra las aulas disponibles
+              {isAdmin
+                ? 'Visualiza, crea y administra las aulas disponibles'
+                : 'Visualiza las aulas disponibles'
+              }
             </p>
           </Link>
 
@@ -59,7 +62,10 @@ export default function Home() {
           >
             <h3 className="text-xl font-semibold text-gray-900 mb-2">Horarios</h3>
             <p className="text-gray-600">
-              Gestiona los horarios disponibles para reservas
+              {isAdmin
+                ? 'Crea y gestiona los horarios disponibles para reservas'
+                : 'Visualiza los horarios disponibles para reservas'
+              }
             </p>
           </Link>
 
@@ -69,7 +75,10 @@ export default function Home() {
           >
             <h3 className="text-xl font-semibold text-gray-900 mb-2">Reservas</h3>
             <p className="text-gray-600">
-              Crea y administra las reservas de aulas
+              {isAdmin
+                ? 'Visualiza y administra todas las reservas de aulas'
+                : 'Crea y administra tus reservas de aulas'
+              }
             </p>
           </Link>
         </div>
