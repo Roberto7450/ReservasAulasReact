@@ -1,13 +1,14 @@
-# 🏫 Sistema de Reservas de Aulas
+# 🏫 Sistema de Reservas de Aulas - Full Stack
 
-API REST desarrollada con Spring Boot para gestionar las reservas de aulas comunes en un centro educativo. Incluye autenticación JWT, sistema de roles (ADMIN y PROFESOR), y validaciones de negocio completas.
+**Aplicación completa** para gestionar las reservas de aulas comunes en un centro educativo. Incluye backend API REST con Spring Boot, frontend SPA con React, autenticación JWT, sistema de roles (ADMIN y PROFESOR), y validaciones de negocio completas.
 
-**Repositorio GitHub:** [https://github.com/Roberto7450/ReservasAulas2](https://github.com/Roberto7450/ReservasAulas2)
+**Repositorio GitHub:** [https://github.com/Roberto7450/ReservasAulasReact](https://github.com/Roberto7450/ReservasAulasReact)
 
 ---
 
 ## 🚀 Tecnologías Utilizadas
 
+### Backend (Spring Boot)
 - **Java 21**
 - **Spring Boot 3.5.6**
   - Spring Security (JWT OAuth2 Resource Server)
@@ -19,11 +20,192 @@ API REST desarrollada con Spring Boot para gestionar las reservas de aulas comun
 - **BCrypt** - Cifrado seguro de contraseñas
 - **Lombok** - Reducción de código boilerplate
 - **Maven** - Gestión de dependencias
-- **Apache Commons BeanUtils 1.11.0** - Utilidades para actualización parcial de entidades
+
+### Frontend (React)
+- **React 18.3** - Librería para crear interfaces de usuario
+- **React Router DOM 7.1** - Navegación entre páginas (SPA)
+- **Vite 6.0** - Build tool y dev server ultra rápido
+- **Tailwind CSS 4.0** - Framework de CSS con clases de utilidad
+- **Axios 1.7** - Cliente HTTP para conectar con el backend
+- **JavaScript ES6+** - Arrow functions, destructuring, spread operator, async/await
+
+- **Axios 1.7** - Cliente HTTP para conectar con el backend
+- **JavaScript ES6+** - Arrow functions, destructuring, spread operator, async/await
 
 ---
 
-## 📋 Entidades del Sistema
+## 🏗️ Arquitectura del Proyecto
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                    NAVEGADOR                            │
+│  ┌───────────────────────────────────────────────────┐  │
+│  │          REACT FRONTEND (Vite + Tailwind)         │  │
+│  │  ┌─────────┐  ┌──────────┐  ┌──────────────┐      │  │
+│  │  │ Pages   │  │Components│  │   Services   │      │  │
+│  │  │ - Login │  │ - Navbar │  │ - authService│      │  │
+│  │  │ - Aulas │  │ - Forms  │  │ - aulaService│      │  │
+│  │  │ - Reserv│  │ - Cards  │  │ - axios/api  │      │  │
+│  │  └─────────┘  └──────────┘  └──────────────┘      │  │
+│  │               ↕ React Router                      │  │
+│  │               ↕ Context API (Auth)                │  │
+│  └───────────────────────────────────────────────────┘  │
+│                        ↕ HTTP/JSON + JWT                │
+└─────────────────────────────────────────────────────────┘
+                         ↕
+┌─────────────────────────────────────────────────────────┐
+│              SPRING BOOT BACKEND (API REST)             │
+│  ┌───────────────────────────────────────────────────┐  │
+│  │  Controllers → Services → Repositories → MySQL    │  │
+│  │     ↑              ↑            ↑                 │  │
+│  │  DTOs       Entities/Logic   JPA/Hibernate        │  │
+│  │                                                   │  │
+│  │  Security: JWT + BCrypt + Role-Based Access       │  │
+│  └───────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────┘
+```
+
+**Comunicación:**
+- Frontend (puerto 5173) ↔ Backend (puerto 8080)
+- Autenticación: JWT en header `Authorization: Bearer {token}`
+- Datos: JSON en requests y responses
+
+---
+
+## 📱 Características del Frontend React
+
+### ✨ Funcionalidades Implementadas
+
+**🔐 Autenticación y Seguridad:**
+- Login y registro de usuarios
+- Almacenamiento de token JWT en `localStorage`
+- Contexto global de autenticación (`AuthContext`)
+- Rutas protegidas que verifican autenticación
+- Logout con limpieza de token
+- Decodificación de token para extraer email y roles
+
+**🏠 Páginas Principales:**
+- **Home** - Página de inicio con renderizado condicional
+- **Login** - Formulario de inicio de sesión
+- **Register** - Formulario de registro
+- **Aulas** - CRUD completo con filtros (capacidad, ordenadores)
+- **Horarios** - CRUD completo de horarios
+- **Reservas** - CRUD completo con filtros por rol
+
+**🧩 Componentes Reutilizables:**
+- `Navbar` - Barra de navegación con info del usuario
+- `ProtectedRoute` - HOC que protege rutas privadas
+- `FormularioAula/Horario/Reserva` - Formularios con validación
+- `TarjetaAula/Horario/Reserva` - Tarjetas de visualización
+
+**🎨 Diseño y UX:**
+- Diseño responsive con Tailwind CSS
+- Clases de utilidad: `bg-`, `text-`, `p-`, `m-`, `flex`, `grid`, `rounded-`, `hover:`
+- Notificaciones de éxito y error
+- Confirmaciones antes de eliminar
+- Estados de carga (`loading`)
+
+**⚛️ Conceptos React Utilizados:**
+- **Componentes funcionales** - Toda la app usa function components
+- **Hooks:**
+  - `useState` - Gestión de estado local
+  - `useEffect` - Carga de datos al montar componentes
+  - `useContext` - Acceso al contexto de autenticación
+  - `useNavigate` - Navegación programática
+- **Props** - Paso de datos entre componentes
+- **Context API** - Estado global de autenticación
+- **React Router** - Navegación SPA sin recargar página
+- **Renderizado condicional** - Muestra contenido según estado
+- **Listas con `.map()`** - Renderizado dinámico de arrays
+- **Eventos** - `onClick`, `onChange`, `onSubmit`
+- **Formularios controlados** - Inputs vinculados al estado
+
+**🔌 Conexión con Backend:**
+- Cliente HTTP configurado con Axios
+- Interceptores que añaden token JWT automáticamente
+- Interceptores que redirigen al login si token expira (401)
+- Servicios organizados por entidad (aulaService, horarioService, etc.)
+- Formateo de fechas y horas para el backend
+
+---
+
+## 📦 Estructura del Proyecto
+
+```
+ReservasAulasReact/
+├── frontend/                          # Aplicación React
+│   ├── src/
+│   │   ├── pages/                    # Páginas de la aplicación
+│   │   │   ├── Home.jsx             # Página de inicio
+│   │   │   ├── Login.jsx            # Formulario de login
+│   │   │   ├── Register.jsx         # Formulario de registro
+│   │   │   ├── Aulas.jsx            # Gestión de aulas
+│   │   │   ├── Horarios.jsx         # Gestión de horarios
+│   │   │   └── Reservas.jsx         # Gestión de reservas
+│   │   │
+│   │   ├── components/               # Componentes reutilizables
+│   │   │   ├── Navbar.jsx           # Barra de navegación
+│   │   │   ├── ProtectedRoute.jsx   # Rutas protegidas
+│   │   │   ├── FormularioAula.jsx   # Formulario crear/editar aula
+│   │   │   ├── FormularioHorario.jsx
+│   │   │   ├── FormularioReserva.jsx
+│   │   │   ├── TarjetaAula.jsx      # Tarjeta de información
+│   │   │   ├── TarjetaHorario.jsx
+│   │   │   └── TarjetaReserva.jsx
+│   │   │
+│   │   ├── context/                  # Estado global
+│   │   │   └── AuthContext.jsx      # Contexto de autenticación
+│   │   │
+│   │   ├── services/                 # Servicios HTTP
+│   │   │   ├── authService.js       # Login, registro
+│   │   │   ├── aulaService.js       # CRUD aulas
+│   │   │   ├── horarioService.js    # CRUD horarios
+│   │   │   └── reservaService.js    # CRUD reservas
+│   │   │
+│   │   ├── utils/                    # Utilidades
+│   │   │   └── api.js               # Config axios + interceptores
+│   │   │
+│   │   ├── App.jsx                   # Componente principal (rutas)
+│   │   ├── main.jsx                  # Punto de entrada
+│   │   ├── App.css                   # Estilos adicionales (vacío)
+│   │   └── index.css                 # Importa Tailwind CSS
+│   │
+│   ├── public/                       # Recursos estáticos
+│   ├── index.html                    # HTML base
+│   ├── package.json                  # Dependencias npm
+│   ├── vite.config.js               # Configuración Vite
+│   ├── tailwind.config.js           # Configuración Tailwind
+│   └── eslint.config.js             # Configuración ESLint
+│
+├── src/main/java/.../ReservasAulas/ # Backend Spring Boot
+│   ├── config/                       # Configuración
+│   │   ├── SecurityConfig.java      # Spring Security + JWT
+│   │   ├── CorsConfig.java          # CORS para frontend
+│   │   └── JacksonConfig.java       # Deserialización fechas
+│   │
+│   ├── controllers/                  # Controladores REST
+│   │   ├── ControllerAuth.java      # /auth/** (login, register)
+│   │   ├── ControllerAula.java      # /aulas/**
+│   │   ├── ControllerHorario.java   # /horarios/**
+│   │   ├── ControllerReserva.java   # /reservas/**
+│   │   └── ControllerUsuario.java   # /usuario/**
+│   │
+│   ├── services/                     # Lógica de negocio
+│   ├── repositories/                 # Acceso a datos JPA
+│   ├── entities/                     # Entidades JPA
+│   ├── dtos/                         # DTOs request/response
+│   ├── mapper/                       # Conversión Entity ↔ DTO
+│   ├── enums/                        # Enumeraciones
+│   └── exceptions/                   # Manejo de errores
+│
+├── src/main/resources/
+│   ├── application.properties       # Config BD y servidor
+│   └── data.sql                     # Datos iniciales
+│
+├── pom.xml                          # Dependencias Maven
+├── README.md                        # Este archivo
+└── API_Reservas_Aulas.json         # Colección Postman
+```
 
 ### 📚 Aula
 Representa las aulas disponibles en el centro educativo.
@@ -298,32 +480,39 @@ Todas las validaciones usan anotaciones `@Valid` y son capturadas por `GlobalExc
 
 ### 1️⃣ Requisitos Previos
 
+**Backend:**
 - ✅ **Java 21** o superior
 - ✅ **MySQL 8.0** o superior  
 - ✅ **Maven 3.6** o superior
+
+**Frontend:**
+- ✅ **Node.js 18** o superior (incluye npm)
 - ✅ **Git** (para clonar)
-- ✅ **Postman** (opcional, para pruebas)
+
+**Opcional:**
+- ✅ **Postman** (para probar API)
+- ✅ **VS Code** o **IntelliJ IDEA** (editores recomendados)
 
 ---
 
 ### 2️⃣ Clonar el repositorio
 
 ```bash
-git clone https://github.com/Roberto7450/ReservasAulas2.git
-cd ReservasAulas2
+git clone https://github.com/Roberto7450/ReservasAulasReact.git
+cd ReservasAulasReact
 ```
 
 ---
 
-### 3️⃣ Crear la base de datos MySQL
+### 3️⃣ Configurar y ejecutar el BACKEND
+
+#### a) Crear la base de datos MySQL
 
 ```sql
 CREATE DATABASE reservas CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 ```
 
----
-
-### 4️⃣ Configurar `application.properties`
+#### b) Configurar `application.properties`
 
 Edita `src/main/resources/application.properties`:
 
@@ -338,34 +527,61 @@ spring.datasource.password=TU_PASSWORD_MYSQL
 # JPA/Hibernate
 spring.jpa.hibernate.ddl-auto=update
 spring.jpa.show-sql=true
-
-# Opcional: Dialecto de Hibernate
 spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQLDialect
 ```
 
-**Importante:**
-- `spring.jpa.hibernate.ddl-auto=update` - Crea/actualiza tablas automáticamente
-- Cambia `TU_PASSWORD_MYSQL` por tu contraseña real
+**⚠️ Importante:** Cambia `TU_PASSWORD_MYSQL` por tu contraseña real.
 
----
-
-### 5️⃣ Compilar y ejecutar
+#### c) Compilar y ejecutar
 
 ```bash
-# Compilar el proyecto
+# Desde la raíz del proyecto
 mvn clean install
-
-# Ejecutar la aplicación
 mvn spring-boot:run
 ```
 
-**La API estará disponible en:** `http://localhost:8080`
+**✅ El backend estará disponible en:** `http://localhost:8080`
 
 ---
 
-### 6️⃣ Crear usuarios iniciales
+### 4️⃣ Configurar y ejecutar el FRONTEND
 
-⚠️ **El proyecto NO usa `data.sql`** - Los usuarios se crean mediante la API.
+#### a) Instalar dependencias
+
+```bash
+cd frontend
+npm install
+```
+
+Esto instalará:
+- React 18.3
+- React Router DOM 7.1
+- Axios 1.7
+- Tailwind CSS 4.0
+- Vite 6.0
+
+#### b) Ejecutar servidor de desarrollo
+
+```bash
+npm run dev
+```
+
+**✅ El frontend estará disponible en:** `http://localhost:5173`
+
+#### c) Comandos útiles
+
+```bash
+npm run dev      # Inicia servidor de desarrollo
+npm run build    # Compila para producción
+npm run preview  # Preview de build de producción
+npm run lint     # Ejecuta ESLint
+```
+
+---
+
+### 5️⃣ Crear usuarios iniciales
+
+⚠️ **El proyecto NO usa `data.sql` para usuarios** - Se crean mediante la API.
 
 #### Crear el primer ADMIN:
 
@@ -378,7 +594,7 @@ curl -X POST http://localhost:8080/auth/register \
   }'
 ```
 
-Luego, **manualmente** debes cambiar el rol en la base de datos:
+Luego, **manualmente** cambiar el rol en la base de datos:
 
 ```sql
 UPDATE usuarios 
@@ -399,27 +615,61 @@ curl -X POST http://localhost:8080/auth/register \
 
 Los profesores se crean automáticamente con rol `ROLE_PROFESOR`.
 
+**💡 También puedes registrarte desde el frontend:** Abre `http://localhost:5173/register`
+
 ---
 
-### 7️⃣ Insertar datos de prueba (opcional)
+### 6️⃣ Insertar datos de prueba (opcional)
 
-Ejecuta el script `data.sql` incluido en el proyecto para crear aulas y horarios de prueba:
+Ejecuta el script `data.sql` para crear aulas y horarios:
 
 ```sql
--- Copiar y ejecutar manualmente desde data.sql
-INSERT INTO aulas (nombre, capacidad, es_ordenadores) VALUES ...
-INSERT INTO horarios (dia_semana, hora_inicio, hora_fin) VALUES ...
+-- Ejecutar manualmente en MySQL
+INSERT INTO aulas (nombre, capacidad, es_ordenadores) VALUES 
+  ('Aula 101', 30, false),
+  ('Aula 102', 25, false),
+  ('Aula Informática 1', 20, true);
+
+INSERT INTO horarios (dia_semana, hora_inicio, hora_fin) VALUES 
+  ('LUNES', '08:00:00', '09:00:00'),
+  ('LUNES', '09:00:00', '10:00:00'),
+  ('MARTES', '10:00:00', '11:00:00');
 ```
 
 ---
 
-### 8️⃣ Probar con Postman
+### 7️⃣ Probar la aplicación
 
-1. Importa la colección: `API_Reservas_Aulas.postman_collection.json`
+#### Opción 1: Usar el Frontend React
+
+1. Abre `http://localhost:5173`
+2. Haz clic en "Registrarse" o "Iniciar sesión"
+3. Navega por las secciones: Aulas, Horarios, Reservas
+4. Los administradores verán botones para crear/editar/eliminar
+5. Los profesores solo podrán crear reservas y editar las suyas
+
+#### Opción 2: Usar Postman
+
+1. Importa la colección: `API_Reservas_Aulas.json`
 2. Configura `{{baseUrl}}` = `http://localhost:8080`
 3. Ejecuta "Login - ADMIN" para obtener tu token
 4. El token se guarda automáticamente en variables de colección
 5. Prueba los demás endpoints
+
+---
+
+### 8️⃣ Configuración de CORS (ya configurada)
+
+El backend tiene CORS configurado en `CorsConfig.java` para permitir:
+- Origen: `http://localhost:5173` (frontend React)
+- Métodos: GET, POST, PUT, DELETE, OPTIONS
+- Headers: Authorization, Content-Type
+- Credentials: true
+
+Si cambias el puerto del frontend, actualiza `CorsConfig.java`:
+```java
+configuration.setAllowedOrigins(Arrays.asList("http://localhost:NUEVO_PUERTO"));
+```
 
 ---
 
@@ -1018,154 +1268,197 @@ GET /aulas/1/reservas → Todas las reservas del aula 1
 
 ---
 
-## 📦 Estructura del Proyecto
+## 🌐 Frontend React - Características Detalladas
+
+### 📄 Páginas
+
+**Home.jsx**
+- Renderizado condicional según autenticación
+- Panel de control para usuarios autenticados
+- Página de bienvenida para visitantes
+- Tarjetas de navegación (grid responsive)
+
+**Login.jsx**
+- Formulario controlado con validación
+- Manejo de errores del backend
+- Estados de carga
+- Navegación programática tras login exitoso
+
+**Register.jsx**
+- Formulario con confirmación de contraseña
+- Selector de rol (Profesor/Admin)
+- Validación en tiempo real
+- Redirección automática tras registro
+
+**Aulas.jsx**
+- CRUD completo (Create, Read, Update, Delete)
+- Filtros por capacidad mínima
+- Filtro por aulas con ordenadores
+- Formulario modal para crear/editar
+- Grid responsive de tarjetas
+- Verificación de rol para mostrar botones
+
+**Horarios.jsx**
+- Gestión de tramos horarios
+- Selector de día de la semana
+- Inputs de tipo time para horas
+- Validación de horarios
+
+**Reservas.jsx**
+- Filtro automático por día de semana
+- Solo muestra horarios del día seleccionado
+- Validación de capacidad vs asistentes
+- Control de propiedad (profesores solo ven/editan las suyas)
+
+### 🧩 Componentes
+
+**Navbar.jsx**
+- Responsive (menú hamburguesa en móvil)
+- Muestra email y rol del usuario
+- Badge de Admin/Profesor
+- Logout con confirmación
+
+**ProtectedRoute.jsx**
+- Higher-Order Component (HOC)
+- Verifica token JWT
+- Redirige a login si no autenticado
+- Pantalla de carga mientras verifica
+
+**Formularios (FormularioAula, FormularioHorario, FormularioReserva)**
+- Inputs controlados vinculados a useState
+- Validación antes de enviar
+- Manejo de errores del backend
+- Limpieza de formulario tras guardar
+- Botones de Guardar y Cancelar
+
+**Tarjetas (TarjetaAula, TarjetaHorario, TarjetaReserva)**
+- Diseño con Tailwind (shadow, rounded, hover)
+- Botones de editar y eliminar (solo para admins)
+- Confirmación antes de eliminar
+- Formateo de datos (fechas, horas, días)
+
+### 🔧 Utilidades y Servicios
+
+**api.js**
+- Cliente axios configurado
+- URL dinámica (localhost o producción)
+- Interceptor request: añade token JWT
+- Interceptor response: redirige al login si 401
+- Funciones de formateo de fechas y horas
+
+**authService.js**
+- login(email, password)
+- register(email, password, role)
+- changePassword(passwordActual, nuevaPassword)
+
+**aulaService.js, horarioService.js, reservaService.js**
+- obtenerTodas() / obtenerTodos()
+- obtenerPorId(id)
+- crear(datos)
+- actualizar(id, datos)
+- eliminar(id)
+
+**AuthContext.jsx**
+- Estado global: token, user, loading
+- Funciones: login(), logout()
+- Variables: isAuthenticated, isAdmin
+- Decodificación de token JWT
+- Persistencia en localStorage
+
+### 🎨 Estilos con Tailwind CSS
+
+**Ejemplos de clases usadas:**
+```jsx
+// Layout
+className="flex justify-between items-center"
+className="grid grid-cols-1 md:grid-cols-3 gap-6"
+
+// Espaciado
+className="p-4 m-2 px-6 py-3"
+
+// Colores y fondos
+className="bg-gray-50 text-white border-gray-200"
+className="bg-blue-600 hover:bg-blue-700"
+
+// Tamaños
+className="min-h-screen w-full max-w-7xl"
+
+// Bordes y sombras
+className="rounded-lg shadow-sm border"
+
+// Responsive
+className="hidden md:flex"  // Oculto en móvil, flex en desktop
+
+// Estados
+className="hover:shadow-lg transition"
+className="focus:outline-none focus:ring-2"
+```
+
+### 🔄 Flujo de Autenticación Frontend
 
 ```
-src/main/java/es/iesjuanbosco/roberto/ReservasAulas/
-├── beans/
-│   └── CopiarClase.java              # Utilidad BeanUtils para copiar propiedades no nulas
-│
-├── config/
-│   ├── SecurityConfig.java           # Configuración completa de Spring Security y JWT
-│   └── CorsConfig.java               # Filtro CORS global para permitir peticiones del frontend
-│
-├── controllers/
-│   ├── ControllerAlumno.java         # Ejemplo de uso de @PreAuthorize (no usado)
-│   ├── ControllerAuth.java           # Login, register, perfil, cambiar contraseña
-│   ├── ControllerAula.java           # CRUD aulas + filtros + reservas por aula
-│   ├── ControllerHorario.java        # CRUD horarios
-│   ├── ControllerReserva.java        # CRUD reservas con validación de propiedad
-│   └── ControllerUsuario.java        # Gestión usuarios (solo ADMIN)
-│
-├── dtos/
-│   ├── AulaDTO.java                  # Response DTO para aulas
-│   ├── AulaRequest.java              # Request DTO para crear/actualizar aulas
-│   ├── CambiarPasswordRequest.java   # DTO para cambio de contraseña
-│   ├── HorarioDTO.java               # Response DTO para horarios
-│   ├── HorarioRequest.java           # Request DTO para crear/actualizar horarios
-│   ├── LoginRequest.java             # Record: email, password
-│   ├── RegisterRequest.java          # Record: email, password
-│   ├── ReservaDTO.java               # Response DTO con info completa
-│   ├── ReservaRequest.java           # Request DTO (sin usuarioId - se obtiene del token)
-│   └── UsuarioDTO.java               # Response DTO sin password
-│
-├── entities/
-│   ├── Aula.java                     # Entidad JPA con relación OneToMany a Reserva
-│   ├── Horario.java                  # Entidad JPA con método seSolapaCon()
-│   ├── Reserva.java                  # Entidad JPA con ManyToOne a Aula, Horario, Usuario
-│   └── Usuario.java                  # Entidad JPA que implementa UserDetails
-│
-├── enums/
-│   └── DiaSemana.java                # Enum: LUNES...DOMINGO
-│
-├── exceptions/
-│   └── GlobalExceptionHandler.java   # @RestControllerAdvice - Manejo centralizado
-│
-├── mapper/
-│   ├── AulaMapper.java               # Conversión Aula ↔ AulaDTO
-│   ├── HorarioMapper.java            # Conversión Horario ↔ HorarioDTO
-│   ├── ReservaMapper.java            # Conversión Reserva ↔ ReservaDTO
-│   └── UsuarioMapper.java            # Conversión Usuario ↔ UsuarioDTO
-│
-├── repositories/
-│   ├── RepositorioAula.java          # Métodos: findByCapacidad, findByEsOrdenadores
-│   ├── RepositorioHorario.java       # Repositorio básico JPA
-│   ├── RepositorioReserva.java       # Query personalizada: existsSolapamiento
-│   └── RepositorioUsuario.java       # Método: findByEmail
-│
-├── services/
-│   ├── CustomUserDetailsService.java # Implementa UserDetailsService
-│   ├── JwtService.java               # Generación de tokens JWT
-│   ├── ServiceAula.java              # Lógica de negocio para aulas
-│   ├── ServiceHorario.java           # Lógica de negocio para horarios
-│   ├── ServiceReserva.java           # Validaciones + lógica reservas
-│   └── ServiceUsuario.java           # Gestión usuarios y contraseñas
-│
-└── ReservasAulasApplication.java     # Clase principal Spring Boot
-
-src/main/resources/
-├── application.properties            # Configuración BD y JPA
-└── data.sql                          # Script para insertar aulas y horarios de prueba
-
-Frontend/
-├── crud_reservas_aulas.html          # Interfaz web completa CON autenticación JWT
-└── API_Reservas_Aulas.postman_collection.json  # Colección Postman
+1. Usuario va a /login
+2. Introduce credenciales
+3. authService.login() → POST /auth/login
+4. Backend devuelve token JWT
+5. AuthContext.login(token) → Guarda en localStorage
+6. Decodifica token → Extrae email y roles
+7. Actualiza estado: isAuthenticated = true
+8. navigate('/') → Redirige a Home
+9. Home renderiza panel de control
+10. Cada petición incluye: Authorization: Bearer {token}
 ```
 
----
+### 🔒 Protección de Rutas
 
-## 🌐 Frontend Web
+```jsx
+// En App.jsx
+<Route
+  path="/aulas"
+  element={
+    <ProtectedRoute>
+      <Aulas />
+    </ProtectedRoute>
+  }
+/>
+```
 
-El proyecto incluye una interfaz web en `crud_reservas_aulas.html`.
-
-### Características:
-
-✅ **Gestión de Aulas**
-- Crear, editar, eliminar aulas
-- Filtrar por capacidad y ordenadores
-- Ver reservas de cada aula
-
-✅ **Gestión de Horarios**
-- Crear, editar, eliminar horarios
-- Visualización de tramos horarios
-
-✅ **Gestión de Reservas**
-- Crear reservas
-- Ver todas las reservas
-- Editar y eliminar reservas
-
-✅ **Características técnicas**
-- Sistema de pestañas (Aulas, Horarios, Reservas)
-- Conexión configurable al backend
-- Notificaciones visuales
-- Modal de confirmación para eliminar
-
-### Cómo usar:
-
-1. Asegúrate de que el backend esté corriendo en `http://localhost:8080`
-2. Abre `crud_reservas_aulas.html` en tu navegador
-3. Configura la URL si es necesaria
-4. Haz clic en "Probar Conexión"
-5. Navega entre las pestañas
-
----
-
-## 🚀 Próximas Mejoras
-
-Posibles extensiones del proyecto:
-
-- [ ] **Roles desde BD** - Tabla separada de roles
-- [ ] **Notificaciones email** - Confirmar reservas
-- [ ] **Calendario visual** - Ver disponibilidad
-- [ ] **Estadísticas** - Panel de métricas
-- [ ] **Exportar datos** - PDF o Excel
-- [ ] **API de disponibilidad** - Ver horarios libres
-- [ ] **Sistema de aprobación** - Reservas que requieren autorización
+**ProtectedRoute verifica:**
+1. ¿Hay token en localStorage?
+2. ¿El token es válido?
+3. Si NO → `<Navigate to="/login" />`
+4. Si SÍ → Renderiza `<Aulas />`
 
 ---
 
 ## 📚 Documentación Técnica
 
-### Tecnologías y Frameworks:
-
+### Backend:
 - [Spring Boot Documentation](https://docs.spring.io/spring-boot/docs/current/reference/html/)
-- [Spring Security](https://docs.spring.io/spring-security/reference/index.html)
+- [Spring Security](https://docs.spring.io/spring-security/reference/index.html/)
 - [JJWT (Java JWT)](https://github.com/jwtk/jjwt)
 - [Spring Data JPA](https://docs.spring.io/spring-data/jpa/docs/current/reference/html/)
 - [Bean Validation](https://beanvalidation.org/2.0/spec/)
 
-### Guías útiles:
+### Frontend:
+- [React Documentation](https://react.dev/)
+- [React Router](https://reactrouter.com/)
+- [Tailwind CSS](https://tailwindcss.com/docs)
+- [Axios](https://axios-http.com/docs/intro)
+- [Vite](https://vite.dev/)
 
+### Guías útiles:
 - [JWT con Spring Boot - Baeldung](https://www.baeldung.com/spring-security-oauth-jwt)
 - [Spring Security Architecture](https://spring.io/guides/topicals/spring-security-architecture)
+- [React Hooks Guide](https://react.dev/reference/react)
+- [Context API Guide](https://react.dev/learn/passing-data-deeply-with-context)
 - [REST API Best Practices](https://restfulapi.net/)
 
 ---
 
 ## 🎓 Aprendizajes del Proyecto
 
-Tecnologías y conceptos aplicados:
-
+### Backend (Spring Boot)
 ✅ **Spring Boot 3.5.6** - Framework moderno de Java  
 ✅ **Spring Security** - Autenticación y autorización  
 ✅ **JWT (JSON Web Tokens)** - Autenticación stateless  
@@ -1178,9 +1471,53 @@ Tecnologías y conceptos aplicados:
 ✅ **API REST** - Diseño de endpoints RESTful  
 ✅ **BCrypt** - Hash de contraseñas seguro  
 ✅ **OAuth2 Resource Server** - Validación automática de tokens  
+✅ **CORS** - Configuración para permitir frontend
+
+### Frontend (React)
+✅ **React 18** - Librería para crear interfaces de usuario  
+✅ **Componentes funcionales** - Function components en lugar de class  
+✅ **Hooks** - useState, useEffect, useContext, useNavigate  
+✅ **React Router** - Navegación SPA sin recargar página  
+✅ **Context API** - Estado global de autenticación  
+✅ **Props** - Paso de datos entre componentes  
+✅ **Renderizado condicional** - Mostrar contenido según estado  
+✅ **Formularios controlados** - Inputs vinculados al estado  
+✅ **Eventos** - onClick, onChange, onSubmit  
+✅ **Listas con .map()** - Renderizado dinámico de arrays  
+✅ **Axios** - Cliente HTTP para conectar con backend  
+✅ **Interceptores** - Añadir token JWT automáticamente  
+✅ **Tailwind CSS** - Framework de CSS con clases de utilidad  
+✅ **Vite** - Build tool moderno y rápido  
+✅ **JavaScript ES6+** - Arrow functions, destructuring, spread, async/await
+
+---
+
+## 🚀 Próximas Mejoras
+
+Posibles extensiones del proyecto:
+
+**Backend:**
+- [ ] Roles desde BD - Tabla separada de roles
+- [ ] Notificaciones email - Confirmar reservas por correo
+- [ ] API de disponibilidad - Endpoint para ver horarios libres
+- [ ] Sistema de aprobación - Reservas que requieren autorización
+- [ ] Logs con SLF4J - Sistema de auditoría
+
+**Frontend:**
+- [ ] Calendario visual - Ver disponibilidad en calendario
+- [ ] Estadísticas - Dashboard con gráficas
+- [ ] Exportar datos - Descargar PDF o Excel
+- [ ] Notificaciones en tiempo real - WebSockets
+- [ ] Dark mode - Tema oscuro con Tailwind
+- [ ] Paginación - Para listas largas
+- [ ] Búsqueda avanzada - Filtros múltiples combinados
+- [ ] Perfil de usuario - Página para editar datos
 
 ---
 
 **¡Gracias por revisar este proyecto!** 🚀
+
+**Desarrollado por:** Roberto  
+**GitHub:** [https://github.com/Roberto7450/ReservasAulasReact](https://github.com/Roberto7450/ReservasAulasReact)  
 
 Si tienes dudas o sugerencias, abre un issue en GitHub.
