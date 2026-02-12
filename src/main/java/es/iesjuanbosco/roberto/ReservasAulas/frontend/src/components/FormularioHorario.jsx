@@ -1,5 +1,4 @@
-// Componente de formulario para crear y editar horarios
-
+// COMPONENTE: Formulario reutilizable para crear/editar
 import { useState, useEffect } from 'react';
 
 const DIAS = ['LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO', 'DOMINGO'];
@@ -15,12 +14,13 @@ const DIA_LABELS = {
 };
 
 export default function FormularioHorario({ horarioEditando, onGuardar, onCancelar }) {
+  // Estados para los campos del formulario
   const [diaSemana, setDiaSemana] = useState('LUNES');
   const [horaInicio, setHoraInicio] = useState('');
   const [horaFin, setHoraFin] = useState('');
   const [error, setError] = useState('');
 
-  // Actualizar campos del formulario cuando cambia horarioEditando
+  // Cargar datos si se está editando
   useEffect(() => {
     if (horarioEditando) {
       setDiaSemana(horarioEditando.diaSemana || 'LUNES');
@@ -149,4 +149,3 @@ export default function FormularioHorario({ horarioEditando, onGuardar, onCancel
     </div>
   );
 }
-

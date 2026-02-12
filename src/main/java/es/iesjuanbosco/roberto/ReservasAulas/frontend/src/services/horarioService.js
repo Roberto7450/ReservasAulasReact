@@ -1,19 +1,21 @@
+// Servicio CRUD de Horarios
 import apiClient, { formatTimeToHHmmss } from '../utils/api';
 
 export const horarioService = {
-
+  // GET: Obtener todos los horarios
   obtenerTodos: async () => {
     const response = await apiClient.get('/horarios');
     return response.data;
   },
 
+  // GET: Obtener horario por ID
   obtenerPorId: async (id) => {
     const response = await apiClient.get(`/horarios/${id}`);
     return response.data;
   },
 
+  // POST: Crear horario
   crear: async (horario) => {
-    // Convertir horas a formato HH:mm:ss que Jackson puede deserializar
     const payload = {
       ...horario,
       horaInicio: formatTimeToHHmmss(horario.horaInicio),
@@ -23,8 +25,8 @@ export const horarioService = {
     return response.data;
   },
 
+  // PUT: Actualizar horario
   actualizar: async (id, horario) => {
-    // Convertir horas a formato HH:mm:ss que Jackson puede deserializar
     const payload = {
       ...horario,
       horaInicio: formatTimeToHHmmss(horario.horaInicio),
@@ -34,6 +36,7 @@ export const horarioService = {
     return response.data;
   },
 
+  // DELETE: Eliminar horario
   eliminar: async (id) => {
     const response = await apiClient.delete(`/horarios/${id}`);
     return response.data;

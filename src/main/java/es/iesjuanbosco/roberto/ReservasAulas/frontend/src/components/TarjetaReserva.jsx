@@ -1,5 +1,4 @@
-// Componente de tarjeta para mostrar información de una reserva
-
+// COMPONENTE: Tarjeta de información reutilizable
 export default function TarjetaReserva({ reserva, onEditar, onEliminar, isAdmin, userEmail }) {
   const handleEliminar = () => {
     if (window.confirm('¿Estás seguro de que deseas eliminar esta reserva?')) {
@@ -7,7 +6,7 @@ export default function TarjetaReserva({ reserva, onEditar, onEliminar, isAdmin,
     }
   };
 
-  // Formatear fecha desde formato dd/MM/yyyy
+  // Formatear fecha desde dd/MM/yyyy
   const formatearFecha = (fechaString) => {
     if (!fechaString) return 'Sin fecha';
 
@@ -76,4 +75,3 @@ export default function TarjetaReserva({ reserva, onEditar, onEliminar, isAdmin,
     </div>
   );
 }
-

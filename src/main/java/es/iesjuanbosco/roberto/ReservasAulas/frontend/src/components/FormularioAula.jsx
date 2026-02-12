@@ -1,15 +1,14 @@
-// Componente de formulario para crear y editar aulas
-// Recibe el aula a editar (si existe) y callbacks para guardar y cancelar
-
+// COMPONENTE: Formulario reutilizable para crear/editar
 import { useState, useEffect } from 'react';
 
 export default function FormularioAula({ aulaEditando, onGuardar, onCancelar }) {
+  // Estados para los campos del formulario
   const [nombre, setNombre] = useState('');
   const [capacidad, setCapacidad] = useState('');
   const [esOrdenadores, setEsOrdenadores] = useState(false);
   const [error, setError] = useState('');
 
-  // Actualizar campos del formulario cuando cambia aulaEditando
+  // Cargar datos si se está editando
   useEffect(() => {
     if (aulaEditando) {
       setNombre(aulaEditando.nombre || '');
@@ -133,4 +132,3 @@ export default function FormularioAula({ aulaEditando, onGuardar, onCancelar }) 
     </div>
   );
 }
-

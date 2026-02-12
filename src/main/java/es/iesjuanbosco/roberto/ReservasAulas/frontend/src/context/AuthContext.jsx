@@ -1,3 +1,4 @@
+// Contexto global: gestiona autenticación JWT en toda la app
 import { createContext, useContext, useState, useEffect } from 'react';
 
 const AuthContext = createContext();
@@ -7,19 +8,16 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Función para decodificar token y extraer información del usuario
+  // Decodifica token JWT y extrae email y roles
   const decodeToken = (token) => {
     try {
       const payload = JSON.parse(atob(token.split('.')[1]));
 
-      // Extraer roles del payload - pueden venir como string separado por comas o como array
       let roles = [];
       if (payload.roles) {
         if (typeof payload.roles === 'string') {
-          // Si es string, dividir por comas
           roles = payload.roles.split(',').map(r => r.trim());
         } else if (Array.isArray(payload.roles)) {
-          // Si ya es array, usar directamente
           roles = payload.roles;
         }
       }
@@ -34,7 +32,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Cargar token del localStorage al iniciar
+  // Al iniciar, verificar si hay token en localStorage
   useEffect(() => {
     const storedToken = localStorage.getItem('jwt_token');
     if (storedToken) {
@@ -68,12 +66,10 @@ export const AuthProvider = ({ children }) => {
 
   const isAuthenticated = !!token;
 
-  // Función para verificar si el usuario tiene un rol específico
   const hasRole = (role) => {
     return user?.roles?.includes(role) || false;
   };
 
-  // Verificar si el usuario es administrador
   const isAdmin = hasRole('ROLE_ADMIN');
 
   return (
@@ -83,6 +79,7 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
+// Hook para usar el contexto fácilmente
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {

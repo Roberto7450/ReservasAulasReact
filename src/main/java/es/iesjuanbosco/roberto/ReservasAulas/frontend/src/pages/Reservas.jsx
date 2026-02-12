@@ -1,3 +1,4 @@
+// PÁGINA: Gestión de Reservas - CRUD completo con filtros por rol
 import { useState, useEffect } from 'react';
 import { reservaService } from '../services/reservaService';
 import { aulaService } from '../services/aulaService';
@@ -9,23 +10,20 @@ import TarjetaReserva from '../components/TarjetaReserva';
 export default function Reservas() {
   const { isAdmin, user } = useAuth();
 
-  // Estados principales
+  // Estados: lista de datos, cargando, errores, formulario
   const [todasLasReservas, setTodasLasReservas] = useState([]);
   const [aulas, setAulas] = useState([]);
   const [horarios, setHorarios] = useState([]);
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState('');
-
-  // Estados para controlar el formulario
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [reservaEditando, setReservaEditando] = useState(null);
 
-  // Cargar datos al montar el componente
+  // useEffect: cargar datos al montar el componente
   useEffect(() => {
     cargarDatos();
   }, []);
 
-  // Función para cargar todos los datos necesarios
   const cargarDatos = async () => {
     setCargando(true);
     setError('');
@@ -48,12 +46,12 @@ export default function Reservas() {
     }
   };
 
-  // Filtrar reservas: profesores solo ven las suyas, admin ve todas
+  // Filtrar por rol: profesores ven solo las suyas, admin ve todas
   const reservasFiltradas = isAdmin
     ? todasLasReservas
     : todasLasReservas.filter(r => r.usuarioEmail === user?.email);
 
-  // Guardar reserva (crear o actualizar)
+  // CRUD: Guardar (crear o actualizar)
   const handleGuardar = async (reservaData) => {
     try {
       if (reservaEditando) {
@@ -66,7 +64,6 @@ export default function Reservas() {
       setMostrarFormulario(false);
       setReservaEditando(null);
     } catch (err) {
-      // Extraer y propagar el mensaje de error correctamente
       let mensajeError = 'Error al guardar';
 
       if (err.response?.data) {
@@ -83,13 +80,13 @@ export default function Reservas() {
     }
   };
 
-  // Editar reserva existente
+  // CRUD: Editar
   const handleEditar = (reserva) => {
     setReservaEditando(reserva);
     setMostrarFormulario(true);
   };
 
-  // Eliminar reserva
+  // CRUD: Eliminar
   const handleEliminar = async (id) => {
     try {
       await reservaService.eliminar(id);
@@ -99,7 +96,6 @@ export default function Reservas() {
     }
   };
 
-  // Cancelar edición o creación
   const handleCancelar = () => {
     setMostrarFormulario(false);
     setReservaEditando(null);

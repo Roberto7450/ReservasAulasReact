@@ -1,8 +1,7 @@
-// Componente de formulario para crear y editar reservas
-
+// COMPONENTE: Formulario reutilizable para crear/editar
 import { useState, useEffect } from 'react';
 
-// Obtener el nombre del día de la semana en español sin tilde
+// Obtener día de la semana desde fecha
 const getDayName = (dateStr) => {
   if (!dateStr) return null;
   const date = new Date(dateStr + 'T00:00:00');
@@ -17,6 +16,7 @@ export default function FormularioReserva({
   aulas,
   horarios
 }) {
+  // Estados para los campos del formulario
   const [aulaId, setAulaId] = useState('');
   const [horarioId, setHorarioId] = useState('');
   const [fecha, setFecha] = useState('');
@@ -24,7 +24,7 @@ export default function FormularioReserva({
   const [asistentes, setAsistentes] = useState('');
   const [error, setError] = useState('');
 
-  // Filtrar horarios según el día de la semana de la fecha seleccionada
+  // Filtrar horarios según día de la semana
   const horariosFiltrados = fecha && horarios
     ? horarios.filter(h => h.diaSemana === getDayName(fecha))
     : horarios || [];
@@ -214,5 +214,3 @@ export default function FormularioReserva({
     </div>
   );
 }
-
-

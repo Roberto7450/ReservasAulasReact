@@ -1,7 +1,6 @@
-// Componente para mostrar la información de un aula en formato de tarjeta
-// Recibe el aula y callbacks para editar y eliminar
-
+// COMPONENTE: Tarjeta de información reutilizable
 export default function TarjetaAula({ aula, onEditar, onEliminar, isAdmin }) {
+
   const handleEliminar = () => {
     if (window.confirm('¿Estás seguro de que deseas eliminar esta aula?')) {
       onEliminar(aula.id);
@@ -43,4 +42,3 @@ export default function TarjetaAula({ aula, onEditar, onEliminar, isAdmin }) {
     </div>
   );
 }
-

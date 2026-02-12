@@ -1,5 +1,4 @@
-// Componente para mostrar la información de un horario en formato de tarjeta
-
+// COMPONENTE: Tarjeta de información reutilizable
 const DIA_LABELS = {
   LUNES: 'Lunes',
   MARTES: 'Martes',
@@ -48,4 +47,3 @@ export default function TarjetaHorario({ horario, onEditar, onEliminar, isAdmin 
     </div>
   );
 }
-

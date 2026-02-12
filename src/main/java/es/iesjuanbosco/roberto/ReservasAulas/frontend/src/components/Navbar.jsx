@@ -1,3 +1,4 @@
+// Barra de navegación superior (visible en todas las páginas)
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
@@ -18,6 +19,8 @@ export default function Navbar() {
             <Link to="/" className="text-2xl font-bold text-gray-900">
               Reservas Aulas
             </Link>
+
+            {/* Menú visible solo si está autenticado */}
             {isAuthenticated && (
               <div className="hidden md:flex gap-4">
                 <Link

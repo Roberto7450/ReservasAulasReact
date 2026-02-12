@@ -1,3 +1,4 @@
+// PÁGINA: Gestión de Horarios - CRUD completo
 import { useState, useEffect } from 'react';
 import { horarioService } from '../services/horarioService';
 import { useAuth } from '../context/AuthContext';
@@ -7,21 +8,18 @@ import TarjetaHorario from '../components/TarjetaHorario';
 export default function Horarios() {
   const { isAdmin } = useAuth();
 
-  // Estados principales
+  // Estados: lista de datos, cargando, errores, formulario
   const [horarios, setHorarios] = useState([]);
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState('');
-
-  // Estados para controlar el formulario
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [horarioEditando, setHorarioEditando] = useState(null);
 
-  // Cargar horarios al montar el componente
+  // useEffect: cargar datos al montar el componente
   useEffect(() => {
     cargarHorarios();
   }, []);
 
-  // Función para cargar todos los horarios desde el backend
   const cargarHorarios = async () => {
     setCargando(true);
     setError('');
@@ -37,7 +35,7 @@ export default function Horarios() {
     }
   };
 
-  // Guardar horario (crear o actualizar)
+  // CRUD: Guardar (crear o actualizar)
   const handleGuardar = async (horarioData) => {
     try {
       if (horarioEditando) {
@@ -66,13 +64,13 @@ export default function Horarios() {
     }
   };
 
-  // Editar horario existente
+  // CRUD: Editar
   const handleEditar = (horario) => {
     setHorarioEditando(horario);
     setMostrarFormulario(true);
   };
 
-  // Eliminar horario
+  // CRUD: Eliminar
   const handleEliminar = async (id) => {
     try {
       await horarioService.eliminar(id);
@@ -82,7 +80,6 @@ export default function Horarios() {
     }
   };
 
-  // Cancelar edición o creación
   const handleCancelar = () => {
     setMostrarFormulario(false);
     setHorarioEditando(null);
@@ -150,4 +147,3 @@ export default function Horarios() {
     </div>
   );
 }
-

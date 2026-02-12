@@ -1,3 +1,4 @@
+// Componente que protege rutas verificando autenticación
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
@@ -12,6 +13,7 @@ export default function ProtectedRoute({ children }) {
     );
   }
 
+  // Si no autenticado, redirige al login
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }

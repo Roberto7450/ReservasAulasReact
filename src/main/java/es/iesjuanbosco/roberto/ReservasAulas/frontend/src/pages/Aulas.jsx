@@ -1,3 +1,4 @@
+// PÁGINA: Gestión de Aulas - CRUD completo con filtros
 import { useState, useEffect } from 'react';
 import { aulaService } from '../services/aulaService';
 import { useAuth } from '../context/AuthContext';
@@ -7,27 +8,22 @@ import TarjetaAula from '../components/TarjetaAula';
 export default function Aulas() {
   const { isAdmin } = useAuth();
 
-  // Estado de todas las aulas cargadas desde el servidor
+  // Estados: lista de datos, cargando, errores, formulario y filtros
   const [todasLasAulas, setTodasLasAulas] = useState([]);
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState('');
-
-  // Estados para controlar el formulario de edición/creación
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [aulaEditando, setAulaEditando] = useState(null);
-
-  // Estado de filtros aplicados
   const [filtros, setFiltros] = useState({
     capacidadMinima: '',
     soloConOrdenadores: false
   });
 
-  // Cargar aulas al montar el componente
+  // useEffect: cargar datos al montar el componente
   useEffect(() => {
     cargarAulas();
   }, []);
 
-  // Función para cargar todas las aulas desde el backend
   const cargarAulas = async () => {
     setCargando(true);
     setError('');
@@ -43,20 +39,18 @@ export default function Aulas() {
     }
   };
 
-  // Filtrar aulas en el cliente usando array.filter()
+  // Filtrar datos con .filter() sin modificar el array original
   const aulasFiltradas = todasLasAulas.filter(aula => {
     if (filtros.capacidadMinima && aula.capacidad < parseInt(filtros.capacidadMinima)) {
       return false;
     }
-
     if (filtros.soloConOrdenadores && !aula.esOrdenadores) {
       return false;
     }
-
     return true;
   });
 
-  // Guardar aula (crear o actualizar)
+  // CRUD: Guardar (crear o actualizar)
   const handleGuardar = async (aulaData) => {
     try {
       if (aulaEditando) {
@@ -85,13 +79,13 @@ export default function Aulas() {
     }
   };
 
-  // Editar aula existente
+  // CRUD: Editar
   const handleEditar = (aula) => {
     setAulaEditando(aula);
     setMostrarFormulario(true);
   };
 
-  // Eliminar aula
+  // CRUD: Eliminar
   const handleEliminar = async (id) => {
     try {
       await aulaService.eliminar(id);
@@ -101,13 +95,11 @@ export default function Aulas() {
     }
   };
 
-  // Cancelar edición o creación
   const handleCancelar = () => {
     setMostrarFormulario(false);
     setAulaEditando(null);
   };
 
-  // Limpiar todos los filtros aplicados
   const limpiarFiltros = () => {
     setFiltros({ capacidadMinima: '', soloConOrdenadores: false });
   };

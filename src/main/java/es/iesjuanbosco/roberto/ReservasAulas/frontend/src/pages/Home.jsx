@@ -1,9 +1,11 @@
+// Página de inicio con renderizado condicional según autenticación
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 export default function Home() {
   const { isAuthenticated, isAdmin } = useAuth();
 
+  // Si no autenticado: página de bienvenida
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-white">
@@ -35,6 +37,7 @@ export default function Home() {
     );
   }
 
+  // Si autenticado: panel de control
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">

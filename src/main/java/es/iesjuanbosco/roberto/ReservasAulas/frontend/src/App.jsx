@@ -1,3 +1,4 @@
+// Componente principal: define todas las rutas de la aplicación
 import { Routes, Route, Navigate } from 'react-router-dom'
 import Navbar from './components/Navbar'
 import ProtectedRoute from './components/ProtectedRoute'
@@ -13,12 +14,14 @@ function App() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
+
       <Routes>
+        {/* Rutas públicas */}
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         
-        {/* Protected Routes */}
+        {/* Rutas protegidas: requieren autenticación JWT */}
         <Route
           path="/aulas"
           element={
@@ -44,7 +47,7 @@ function App() {
           }
         />
 
-        {/* Fallback */}
+        {/* Ruta por defecto */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </div>

@@ -1,18 +1,21 @@
+// Servicio CRUD de Reservas
 import apiClient, { formatDateToDDMMYYYY } from '../utils/api';
 
 export const reservaService = {
+  // GET: Obtener todas las reservas
   obtenerTodas: async () => {
     const response = await apiClient.get('/reservas');
     return response.data;
   },
 
+  // GET: Obtener reserva por ID
   obtenerPorId: async (id) => {
     const response = await apiClient.get(`/reservas/${id}`);
     return response.data;
   },
 
+  // POST: Crear reserva
   crear: async (reserva) => {
-    // Convertir fecha a formato dd/MM/yyyy que espera el servidor
     const payload = {
       ...reserva,
       fecha: formatDateToDDMMYYYY(reserva.fecha),
@@ -21,8 +24,8 @@ export const reservaService = {
     return response.data;
   },
 
+  // PUT: Actualizar reserva
   actualizar: async (id, reserva) => {
-    // Convertir fecha a formato dd/MM/yyyy que espera el servidor
     const payload = {
       ...reserva,
       fecha: formatDateToDDMMYYYY(reserva.fecha),
@@ -31,6 +34,7 @@ export const reservaService = {
     return response.data;
   },
 
+  // DELETE: Eliminar reserva
   eliminar: async (id) => {
     const response = await apiClient.delete(`/reservas/${id}`);
     return response.data;
